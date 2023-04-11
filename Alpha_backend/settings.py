@@ -25,6 +25,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'app_permission',
+    'app_comment',
+    'app_block',
+    'app_notice',
+    'app_point',
+    'app_post',
+    'app_user'
 ]
 
 MIDDLEWARE = [
@@ -90,11 +97,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Alpha_Backend.wsgi.application'
 
 # Database
-
+# 同步数据库: python manage.py makemigrations, python manage.py migrate
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'four_s_db',
+        'USER': 'root',
+        'PASSWORD': 'mtr12345',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
     }
 }
 
