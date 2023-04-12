@@ -8,3 +8,8 @@ class Comment(models.Model):
     parent_id = models.IntegerField()
     text = models.TextField()
     time = models.DateTimeField()
+
+
+class CommentLike(models.Model):
+    user_id = models.IntegerField()
+    comment_id = models.IntegerField()

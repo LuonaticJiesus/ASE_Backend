@@ -25,10 +25,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    'app_permission',
     'app_comment',
     'app_block',
     'app_notice',
+    'app_permission',
     'app_point',
     'app_post',
     'app_user'

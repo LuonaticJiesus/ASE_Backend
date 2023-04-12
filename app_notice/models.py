@@ -9,4 +9,8 @@ class Notice(models.Model):
     post_id = models.IntegerField()
     time = models.DateTimeField()
     ddl = models.DateTimeField()
-    state = models.IntegerField()
+
+
+class NoticeConfirm(models.Model):
+    user_id = models.IntegerField()
+    notice_id = models.IntegerField()

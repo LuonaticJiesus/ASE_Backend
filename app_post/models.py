@@ -10,6 +10,11 @@ class Post(models.Model):
     time = models.DateTimeField()
 
 
-class UserLike(models.Model):
+class PostLike(models.Model):
+    user_id = models.IntegerField()
+    post_id = models.IntegerField()
+
+
+class PostFavor(models.Model):
     user_id = models.IntegerField()
     post_id = models.IntegerField()
