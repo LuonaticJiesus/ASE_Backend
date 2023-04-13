@@ -84,9 +84,9 @@ WSGI_APPLICATION = 'BackEnd.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'database_demo',
+        'NAME': 'four_s_db',
         'USER': 'root',
-        'PASSWORD': 'qiqi661131hr',
+        'PASSWORD': 'mtr12345',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
@@ -116,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
