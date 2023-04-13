@@ -8,8 +8,9 @@ class UserLogin(models.Model):
 
 
 class UserInfo(models.Model):
-    user_id = models.IntegerField()
+    user_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
+    password = models.CharField(max_length=200)
     card_id = models.CharField(max_length=20)
     phone = models.CharField(max_length=20)
     email = models.CharField(max_length=50)
@@ -17,7 +18,7 @@ class UserInfo(models.Model):
 
 
 class Post(models.Model):
-    post_id = models.IntegerField()
+    post_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200)
     user_id = models.IntegerField()
     txt = models.TextField()
@@ -36,14 +37,14 @@ class PostFavor(models.Model):
 
 
 class Block(models.Model):
-    block_id = models.IntegerField()
+    block_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     time = models.DateTimeField()
     approve_permission = models.IntegerField()
 
 
 class Comment(models.Model):
-    comment_id = models.IntegerField()
+    comment_id = models.AutoField(primary_key=True)
     user_id = models.IntegerField()
     post_id = models.IntegerField()
     parent_id = models.IntegerField(null=True)
@@ -57,7 +58,7 @@ class CommentLike(models.Model):
 
 
 class Notice(models.Model):
-    notice_id = models.IntegerField()
+    notice_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200)
     txt = models.TextField()
     user_id = models.IntegerField()
