@@ -1,6 +1,6 @@
 from django.urls import path
 
-from four_s.four_s_user import user_signup
+from four_s.four_s_user import *
 
 urlpatterns = [
     # 路由配置
@@ -10,8 +10,9 @@ urlpatterns = [
     # path('get_user_info', user_login_demo.get_user_info, name='get_user_info'),
 
     # user
-    path('user/signup/', user_signup, name='user_signup')
-
+    path('user/signup/', user_signup, name='user_signup'),
+    path('user/login/', user_login, name='user_login'),
+    path('user/changePwd/', user_change_pwd, name='user_change_pwd'),
     # notice
 
 ]
