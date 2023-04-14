@@ -57,8 +57,10 @@ def user_login(request):
                 return JsonResponse({'status': -1, 'info': '用户名不存在'})
             if not check_password(password, user.password):
                 return JsonResponse({'status': -1, 'info': '用户名不存在'})
-            user_token = create_token(username)
+            user_token = create_token(str(user.user_id))
+            user_id = user.user_id
             return JsonResponse({'status': 0, 'info': '已登录', 'data': {
+                'userid': user_id,
                 'token': user_token
             }})
 
@@ -73,16 +75,17 @@ def user_change_pwd(request):
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
 
     try:
-        username = request.META.get('HTTP_USERNAME')
+        user_id = request.META.get('HTTP_USERID')
         data = json.loads(request.body)
         new_pwd = data.get('new_pwd')
         with transaction.atomic():
-            if username is None or new_pwd is None:
+            if user_id is None or new_pwd is None:
                 return JsonResponse({'status': -1, 'info': '用户名或密码为空'})
-            user = UserInfo.objects.get(name=username)
+            user_id = int(user_id)
+            user = UserInfo.objects.get(user_id=user_id)
             if user is None:
-                return JsonResponse({'status': -1, 'info': '用户名不存在'})
-            user.password = new_pwd
+                return JsonResponse({'status': -1, 'info': '用户不存在'})
+            user.password = make_password(new_pwd)
             user.save()
             return JsonResponse({'status': -0, 'info': '已修改'})
 

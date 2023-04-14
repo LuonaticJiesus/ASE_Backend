@@ -23,13 +23,13 @@ def decrypt(src):
     return raw
 
 
-def create_token(username):
+def create_token(user_id):
     """生成token信息"""
     # 1. 加密头信息
     header = encrypt(HEADER)
-    # 2. 构造Payload(有效期 5分钟)
-    payload = {"username": username, "iat": time.time(),
-               "exp": time.time() + 5 * 60}
+    # 2. 构造Payload(有效期按秒计算)
+    payload = {"user_id": user_id, "iat": time.time(),
+               "exp": time.time() + 60 * 60}
     payload = encrypt(payload)
     # 3. MD5 生成签名
     md5 = hashlib.md5()
@@ -46,10 +46,10 @@ def get_payload(token):
     return payload
 
 
-def get_username(token):
-    """解析 token 获取 username"""
+def get_userid(token):
+    """解析 token 获取 user_id"""
     payload = get_payload(token)
-    return payload['username']
+    return payload['user_id']
 
 
 def get_exp_time(token):
@@ -58,9 +58,9 @@ def get_exp_time(token):
     return payload['exp']
 
 
-def check_token(username, token):
-    """验证 token：检查 username 和 token 是否一致且未过期"""
-    return get_username(token) == username and get_exp_time(token) > time.time()
+def check_token(user_id, token):
+    """验证 token：检查 user_id 和 token 是否一致且未过期"""
+    return get_userid(token) == user_id and get_exp_time(token) > time.time()
 
 
 try:
@@ -81,11 +81,11 @@ class AuthorizeMiddleware(MiddlewareMixin):
         try:
             if request.path in API_WHITELIST:
                 return
-            username = request.META.get('HTTP_USERNAME')
+            user_id = str(request.META.get('HTTP_USERID'))
             token = request.META.get('HTTP_TOKEN')
-            if username is None or token is None:
+            if user_id is None or token is None:
                 return JsonResponse({'status': -100, 'info': '请登录'})
-            if not check_token(username, token):
+            if not check_token(user_id, token):
                 return JsonResponse({'status': -100, 'info': '请重新登录'})
 
         except Exception as e:
