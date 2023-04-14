@@ -40,6 +40,7 @@ class Block(models.Model):
     block_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     time = models.DateTimeField()
+    # <0: 无需认证，0:需要路人认证，1:成员认证，2:助理认证，3:管理认证，>=4：超管认证
     approve_permission = models.IntegerField()
 
 
@@ -65,6 +66,17 @@ class Notice(models.Model):
     block_id = models.IntegerField()
     time = models.DateTimeField()
     ddl = models.DateTimeField()
+
+    def to_dict(self):
+        return {
+            'notice_id': self.notice_id,
+            'title': self.title,
+            'txt': self.txt,
+            'user_id': self.user_id,
+            'block_id': self.block_id,
+            'time': self.time.strftime('%Y-%m-%d %H:%I:%S'),
+            'ddl': self.ddl.strftime('%Y-%m-%d %H:%I:%S')
+        }
 
 
 class NoticeConfirm(models.Model):

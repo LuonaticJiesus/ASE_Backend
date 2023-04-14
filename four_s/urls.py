@@ -1,18 +1,18 @@
 from django.urls import path
 
+from four_s.four_s_notice import *
 from four_s.four_s_user import *
 
 urlpatterns = [
-    # 路由配置
-    # path('user_login', user_login_demo.user_login, name='user_login'),
-    # path('register', user_login_demo.register, name='register'),
-    # path('user_logout', user_login_demo.user_logout, name='user_logout'),
-    # path('get_user_info', user_login_demo.get_user_info, name='get_user_info'),
-
     # user
     path('user/signup/', user_signup, name='user_signup'),
     path('user/login/', user_login, name='user_login'),
     path('user/changePwd/', user_change_pwd, name='user_change_pwd'),
-    # notice
 
+    # notice
+    path(r'notice/queryRecv/', notice_query_recv, name='notice_query_recv'),
+    path(r'notice/querySend/', notice_query_send, name='notice_query_send'),
+    path(r'notice/queryBlock/', notice_query_block, name='notice_query_block'),
+    path('notice/publish/', notice_publish, name='notice_publish'),
+    path('notice/delete/', notice_delete, name='notice_delete'),
 ]
