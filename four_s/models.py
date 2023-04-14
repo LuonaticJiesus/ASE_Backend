@@ -25,6 +25,16 @@ class Post(models.Model):
     block_id = models.IntegerField()
     time = models.DateTimeField()
 
+    def to_dict(self):
+        return {
+            'post_id': self.post_id,
+            'title': self.title,
+            'user_id': self.user_id,
+            'txt': self.txt,
+            'block_id': self.block_id,
+            'time': self.time
+        }
+
 
 class PostLike(models.Model):
     user_id = models.IntegerField()
@@ -34,6 +44,11 @@ class PostLike(models.Model):
 class PostFavor(models.Model):
     user_id = models.IntegerField()
     post_id = models.IntegerField()
+
+
+class PostChosen(models.Model):
+    post_id = models.IntegerField()
+    block_id = models.IntegerField()
 
 
 class Block(models.Model):

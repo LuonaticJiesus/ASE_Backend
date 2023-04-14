@@ -109,10 +109,10 @@ def notice_publish(request):
     if request.method != 'POST':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
+        user_id = int(request.META.get('HTTP_USERID'))
         data = json.loads(request.body)
         title = data.get('title')
         txt = data.get('txt')
-        user_id = data.get('user_id')
         block_id = data.get('block_id')
         publish_time = data.get('time')
         ddl = data.get('ddl')

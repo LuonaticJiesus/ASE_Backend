@@ -1,6 +1,7 @@
 from django.urls import path
 
 from four_s.four_s_notice import *
+from four_s.four_s_post import *
 from four_s.four_s_user import *
 
 urlpatterns = [
@@ -15,4 +16,11 @@ urlpatterns = [
     path(r'notice/queryBlock/', notice_query_block, name='notice_query_block'),
     path('notice/publish/', notice_publish, name='notice_publish'),
     path('notice/delete/', notice_delete, name='notice_delete'),
+
+    # post
+    path('post/publish/', post_publish, name='post_publish'),
+    path('post/queryTitle/', post_query_title, name='post_query_title'),
+    path('post/queryBlock/', post_query_block, name='post_query_block'),
+    path('post/queryUser/', post_query_user, name='post_query_user'),
+    path('post/like/', post_like, name='post_like'),
 ]
