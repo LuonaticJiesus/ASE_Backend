@@ -67,6 +67,18 @@ class Comment(models.Model):
     txt = models.TextField()
     time = models.DateTimeField()
 
+    def to_dict(self):
+        ret = {
+            'comment_id': self.comment_id,
+            'user_id': self.user_id,
+            'post_id': self.post_id,
+            'txt': self.txt,
+            'time': self.time.strftime('%Y-%m-%d %H:%I:%S')
+        }
+        if self.parent_id is not None:
+            ret['parent_id'] = self.parent_id
+        return ret
+
 
 class CommentLike(models.Model):
     user_id = models.IntegerField()
