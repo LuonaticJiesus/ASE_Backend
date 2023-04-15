@@ -1,10 +1,11 @@
 import json
 from datetime import datetime
 
+from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from four_s.models import Block, Permission, Post, UserInfo, PostLike, Comment
+from four_s.models import Block, Permission, Post, UserInfo, PostLike, Comment, PostChosen, PostFavor
 
 
 def wrap_posts(post_query_set, user_id):
@@ -35,9 +36,10 @@ def post_query_title(request):
     try:
         user_id = int(request.META.get('HTTP_USERID'))
         post_name = request.GET.get('post_name')
-        post_query_set = Post.objects.filter(title__contains=post_name)
-        posts = wrap_posts(post_query_set, user_id)
-        return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
+        with transaction.atomic():
+            post_query_set = Post.objects.filter(title__contains=post_name)
+            posts = wrap_posts(post_query_set, user_id)
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
@@ -53,11 +55,12 @@ def post_query_block(request):
         if block_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         block_id = int(block_id)
-        if not Block.objects.filter(block_id=block_id).exists():
-            return JsonResponse({'status': -1, 'info': '约束错误'})
-        post_query_set = Post.objects.filter(block_id=block_id).order_by('-time')
-        posts = wrap_posts(post_query_set, user_id)
-        return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
+        with transaction.atomic():
+            if not Block.objects.filter(block_id=block_id).exists():
+                return JsonResponse({'status': -1, 'info': '约束错误'})
+            post_query_set = Post.objects.filter(block_id=block_id).order_by('-time')
+            posts = wrap_posts(post_query_set, user_id)
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
@@ -73,11 +76,12 @@ def post_query_user(request):
         if user_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         user_id = int(user_id)
-        if not UserInfo.objects.filter(user_id=user_id).exists():
-            return JsonResponse({'status': -1, 'info': '约束错误'})
-        post_query_set = Post.objects.filter(user_id=user_id).order_by('-time')
-        posts = wrap_posts(post_query_set, userid)
-        return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
+        with transaction.atomic():
+            if not UserInfo.objects.filter(user_id=user_id).exists():
+                return JsonResponse({'status': -1, 'info': '约束错误'})
+            post_query_set = Post.objects.filter(user_id=user_id).order_by('-time')
+            posts = wrap_posts(post_query_set, userid)
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
@@ -96,16 +100,52 @@ def post_publish(request):
         if title is None or txt is None or block_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         block_id = int(block_id)
-        if not Block.objects.filter(block_id=block_id).exists():
-            return JsonResponse({'status': -1, 'info': '约束错误'})
-        if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(permission__gte=1).exists():
-            return JsonResponse({'status': -1, 'info': '权限不足'})
-        post = Post(title=title, user_id=user_id, txt=txt, block_id=block_id, time=datetime.now())
-        post.save()
-        return JsonResponse({'status': 0, 'info': '已发布'})
+        with transaction.atomic():
+            if not Block.objects.filter(block_id=block_id).exists():
+                return JsonResponse({'status': -1, 'info': '约束错误'})
+            if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(
+                    permission__gte=1).exists():
+                return JsonResponse({'status': -1, 'info': '权限不足'})
+            post = Post(title=title, user_id=user_id, txt=txt, block_id=block_id, time=datetime.now())
+            post.save()
+            return JsonResponse({'status': 0, 'info': '已发布'})
     except Exception as e:
         print(e)
-        return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
+        return JsonResponse({'status': -1, 'info': '操作错误，发布失败'})
+
+
+@csrf_exempt
+def post_delete(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        user_id = int(request.META.get('HTTP_USERID'))
+        data = json.loads(request.body)
+        post_id = data.get('post_id')
+        if post_id is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        post_id = int(post_id)
+        with transaction.atomic():
+            post_query_set = Post.objects.filter(post_id=post_id)
+            if not post_query_set.exists():
+                return JsonResponse({'status': -1, 'info': '帖子不存在'})
+            post = post_query_set[0]
+            block_id = post.block_id
+            user_permission_query_set = Permission.objects.filter(user_id=user_id).filter(block_id=block_id)
+            if not user_permission_query_set.exists():
+                return JsonResponse({'status': -1, 'info': '权限不足'})
+            user_permission = user_permission_query_set[0].permission
+            if user_permission < 2:
+                return JsonResponse({'status': -1, 'info': '权限不足'})
+            # delete
+            Comment.objects.filter(post_id=post_id).delete()
+            PostChosen.objects.filter(post_id=post_id).delete()
+            PostFavor.objects.filter(post_id=post_id).delete()
+            PostLike.objects.filter(post_id=post_id).delete()
+            Post.objects.filter(post_id=post_id).delete()
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误，删除失败'})
 
 
 @csrf_exempt
@@ -120,15 +160,48 @@ def post_like(request):
         if post_id is None or like is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         post_id = int(post_id)
-        post_query_set = Post.objects.filter(post_id=post_id)
-        if post_query_set is None:
-            return JsonResponse({'status': -1, 'info': '约束错误'})
-        if like == 0:
-            PostLike.objects.filter(post_id=post_id).filter(user_id=user_id).delete()
-        elif not PostLike.objects.filter(post_id=post_id).filter(user_id=user_id).exists():
-            new_like = PostLike(post_id=post_id, user_id=user_id)
-            new_like.save()
-        return JsonResponse({'status': 0, 'info': '操作成功'})
+        with transaction.atomic():
+            post_query_set = Post.objects.filter(post_id=post_id)
+            if not post_query_set.exists():
+                return JsonResponse({'status': -1, 'info': '帖子不存在'})
+            block_id = post_query_set[0].block_id
+            if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(permission__gte=1).exists():
+                return JsonResponse({'status': -1, 'info': '权限错误'})
+            if like == 0:
+                PostLike.objects.filter(post_id=post_id).filter(user_id=user_id).delete()
+            elif not PostLike.objects.filter(post_id=post_id).filter(user_id=user_id).exists():
+                new_like = PostLike(post_id=post_id, user_id=user_id)
+                new_like.save()
+            return JsonResponse({'status': 0, 'info': '操作成功'})
     except Exception as e:
         print(e)
-        return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
+        return JsonResponse({'status': -1, 'info': '操作错误'})
+
+
+@csrf_exempt
+def post_choose(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        user_id = int(request.META.get('HTTP_USERID'))
+        data = json.loads(request.body)
+        post_id = data.get('post_id')
+        chosen = data.get('chosen')
+        if post_id is None or chosen is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        with transaction.atomic():
+            post_query_set = Post.objects.filter(post_id=post_id)
+            if not post_query_set.exists():
+                return JsonResponse({'status': -1, 'info': '帖子不存在'})
+            block_id = post_query_set[0].block_id
+            if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(permission__gte=2).exists():
+                return JsonResponse({'status': -1, 'info': '权限错误'})
+            if chosen == 0:
+                PostChosen.objects.filter(block_id=block_id).delete()
+            elif not PostChosen.objects.filter(block_id=block_id).filter(post_id=post_id).exists():
+                post_chosen = PostChosen(post_id=post_id, block_id=block_id)
+                post_chosen.save()
+            return JsonResponse({'status': 0, 'info': '操作成功'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误'})
