@@ -1,9 +1,7 @@
-from datetime import datetime
-
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from four_s.models import Block, UserInfo, Notice, NoticeConfirm, Permission, Contribution
+from four_s.models import Block, UserInfo, Permission, Contribution
 
 
 @csrf_exempt
@@ -27,7 +25,7 @@ def get_all_blocks(request):
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
 
-
+@csrf_exempt
 def get_user_blocks(request):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
@@ -43,7 +41,7 @@ def get_user_blocks(request):
         #     block_id_set.add(c.block_id)
         blocks = []
         for contrib in contribution_queryset:
-            block = Block.objects.filter(block_id=contrib.block_id)
+            block = Block.objects.get(block_id=contrib.block_id)
             b_dict = block.to_dict()
             blocks.append(b_dict)
 
@@ -52,7 +50,7 @@ def get_user_blocks(request):
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
 
-
+@csrf_exempt
 def get_block_users(request):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
