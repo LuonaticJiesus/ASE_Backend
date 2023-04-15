@@ -16,6 +16,17 @@ class UserInfo(models.Model):
     email = models.CharField(max_length=50)
     point = models.IntegerField()
 
+    def to_dict(self):
+        return {
+            'user_id': self.user_id,
+            'name': self.name,
+            # 'password': self.password,
+            'card_id': self.card_id,
+            'phone': self.phone,
+            'email': self.email,
+            'point': self.point
+        }
+
 
 class Post(models.Model):
     post_id = models.AutoField(primary_key=True)
@@ -57,6 +68,14 @@ class Block(models.Model):
     time = models.DateTimeField()
     # <0: 无需认证，0:需要路人认证，1:成员认证，2:助理认证，3:管理认证，>=4：超管认证
     approve_permission = models.IntegerField()
+
+    def to_dict(self):
+        return {
+            'block_id': self.block_id,
+            'name': self.name,
+            'time': self.time.strftime('%Y-%m-%d %H:%I:%S'),
+            'approve_permission': self.approve_permission
+        }
 
 
 class Comment(models.Model):
