@@ -8,24 +8,28 @@ from django.views.decorators.csrf import csrf_exempt
 from four_s.models import Block, Permission, Post, UserInfo, PostLike, Comment, PostChosen, PostFavor
 
 
+def wrap_post(p, user_id):
+    p_dict = p.to_dict()
+    p_dict['user_name'] = UserInfo.objects.get(user_id=p.user_id)
+    p_dict['block_name'] = Block.objects.get(block_id=p.block_id)
+    p_dict['like_cnt'] = PostLike.objects.filter(post_id=p.post_id).count()
+    p_dict['comment_cnt'] = Comment.objects.filter(post_id=p.post_id).count()
+    p_dict['like_state'] = 1 if PostLike.objects.filter(user_id=user_id).filter(post_id=p.post_id).exists() else 0
+    comment_query_set = Comment.objects.filter(post_id=p.post_id).order_by('-time')
+    if comment_query_set is None:
+        p_dict['latest_update_user'] = p_dict['user_name']
+        p_dict['latest_time'] = p.time
+    else:
+        comment_user_id = comment_query_set[0].user_id
+        p_dict['latest_update_user'] = UserInfo.objects.get(user_id=comment_user_id).name
+        p_dict['latest_time'] = comment_query_set[0].time
+    return p_dict
+
+
 def wrap_posts(post_query_set, user_id):
     posts = []
     for p in post_query_set:
-        p_dict = p.to_dict()
-        p_dict['user_name'] = UserInfo.objects.get(user_id=p.user_id)
-        p_dict['block_name'] = Block.objects.get(block_id=p.block_id)
-        p_dict['like_cnt'] = PostLike.objects.filter(post_id=p.post_id).count()
-        p_dict['comment_cnt'] = Comment.objects.filter(post_id=p.post_id).count()
-        p_dict['like_state'] = 1 if PostLike.objects.filter(user_id=user_id).filter(post_id=p.post_id).exists() else 0
-        comment_query_set = Comment.objects.filter(post_id=p.post_id).order_by('-time')
-        if comment_query_set is None:
-            p_dict['latest_update_user'] = p_dict['user_name']
-            p_dict['latest_time'] = p.time
-        else:
-            comment_user_id = comment_query_set[0].user_id
-            p_dict['latest_update_user'] = UserInfo.objects.get(user_id=comment_user_id).name
-            p_dict['latest_time'] = comment_query_set[0].time
-        posts.append(p_dict)
+        posts.append(wrap_post(p, user_id))
     return posts
 
 
@@ -165,7 +169,8 @@ def post_like(request):
             if not post_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '帖子不存在'})
             block_id = post_query_set[0].block_id
-            if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(permission__gte=1).exists():
+            if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(
+                    permission__gte=1).exists():
                 return JsonResponse({'status': -1, 'info': '权限错误'})
             if like == 0:
                 PostLike.objects.filter(post_id=post_id).filter(user_id=user_id).delete()
@@ -194,7 +199,8 @@ def post_choose(request):
             if not post_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '帖子不存在'})
             block_id = post_query_set[0].block_id
-            if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(permission__gte=2).exists():
+            if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(
+                    permission__gte=2).exists():
                 return JsonResponse({'status': -1, 'info': '权限错误'})
             if chosen == 0:
                 PostChosen.objects.filter(block_id=block_id).delete()
@@ -202,6 +208,27 @@ def post_choose(request):
                 post_chosen = PostChosen(post_id=post_id, block_id=block_id)
                 post_chosen.save()
             return JsonResponse({'status': 0, 'info': '操作成功'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误'})
+
+
+@csrf_exempt
+def post_query_chosen(request):
+    if request.method != 'GET':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        user_id = int(request.META.get('HTTP_USERID'))
+        block_id = request.GET.get('block_id')
+        if block_id is None:
+            return JsonResponse({'status': -1, 'info': '模块不存在'})
+        with transaction.atomic():
+            post_chosen_query_set = PostChosen.objects.filter(block_id=block_id)
+            posts = []
+            for chosen in post_chosen_query_set:
+                post = Post.objects.get(post_id=chosen.post_id)
+                posts.append(wrap_post(post, user_id))
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误'})
