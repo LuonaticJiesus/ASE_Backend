@@ -1,5 +1,6 @@
 from django.urls import path
 
+from four_s.four_s_block import *
 from four_s.four_s_comment import *
 from four_s.four_s_notice import *
 from four_s.four_s_post import *
@@ -25,11 +26,16 @@ urlpatterns = [
     path('post/publish/', post_publish, name='post_publish'),
     path('post/delete/', post_delete, name='post_delete'),
     path('post/like/', post_like, name='post_like'),
-    path('post/choose/', post_choose, name='post_choose'),
 
     # comment
     path('comment/publish/', comment_publish, name='comment_publish'),
     path('comment/queryPost/', comment_queryPost, name='comment_queryPost'),
     path('comment/delete/', comment_delete, name='comment_delete'),
     path('comment/like/', comment_like, name='comment_like'),
+
+    # block
+    path('block/all/', get_all_blocks, name='get_all_blocks'),
+    path('block/user/', get_user_blocks, name='get_user_blocks'),
+    path('block/userInfo/', get_block_users, name='get_block_users'),
+    path('post/choose/', post_choose, name='post_choose'),
 ]

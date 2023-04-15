@@ -87,7 +87,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'four_s_db',
         'USER': 'root',
-        'PASSWORD': 'mtr12345',
+        # 'PASSWORD': 'mtr12345',
+        'PASSWORD': 'lc123456',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
