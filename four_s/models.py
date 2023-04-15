@@ -17,15 +17,17 @@ class UserInfo(models.Model):
     point = models.IntegerField()
 
     def to_dict(self):
-        return {
+        ret = {
             'user_id': self.user_id,
             'name': self.name,
-            # 'password': self.password,
             'card_id': self.card_id,
-            'phone': self.phone,
-            'email': self.email,
             'point': self.point
         }
+        if self.phone is not None:
+            ret['phone'] = self.phone
+        if self.email is not None:
+            ret['email'] = self.email
+        return ret
 
 
 class Post(models.Model):
