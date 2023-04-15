@@ -66,7 +66,7 @@ def get_block_users(request):
         #     block_id_set.add(c.block_id)
         users = []
         for contrib in contribution_queryset:
-            user = UserInfo.objects.filter(user_id=contrib.user_id)
+            user = UserInfo.objects.get(user_id=contrib.user_id)
             u_dict = user.to_dict()
             users.append(u_dict)
 
