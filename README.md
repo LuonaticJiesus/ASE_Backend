@@ -172,6 +172,23 @@
 
 
 
+### Message
+
+主键：message_id
+
+| 属性名      | 类型          | 限制                  | 说明                                                         |
+| ----------- | ------------- | --------------------- | ------------------------------------------------------------ |
+| message_id  | AutoField     |                       |                                                              |
+| sender_id   | IntegerField  |                       | 发送/产生消息的用户                                          |
+| receiver_id | IntegerField  |                       | 接受消息的用户                                               |
+| content     | CharField     | max_length=200        | 消息的内容（"\[用户名\]{特殊身份} \[点赞/加精/回复/删除\] 了您的 [帖子，评论]!") |
+| source_type | IntegerField  | (1: Post, 2: Comment) | 消息来源                                                     |
+| source_id   | IntegerField  |                       | 消息来源的id                                                 |
+| time        | DateTimeField |                       | 消息产生的时间                                               |
+| status      | IntegerField  | (0:未查看, 1:已查看)  | 消息状态                                                     |
+
+
+
 ## 2 功能函数
 
 ### `four_s_block.py`
@@ -205,6 +222,17 @@
 | notice_query_block | block_id                                                     |        | 查询block下的所有通知，按时间排序                            |                                         | block不存在                   |          | GET      |
 | notice_publish     | user_id(request.META自带)<br />title<br />txt<br />block_id<br />time<br />ddl |        | 发布通知                                                     | 用户权限>=2                             | 权限不够                      |          | POST     |
 | notice_delete      | user_id(request.META自带)<br />notice_id                     |        | 删除通知                                                     | 用户权限perm>=2且删除的是自己发布的通知 | 权限不足:不是该用户发布的通知 |          | DELETE   |
+
+
+
+### `four_s_message.py`
+
+| 函数名              | 传入参数                                                     | 返回值 | 功能（考虑贡献值）     | 前置条件（权限等） | 异常处理 | 接口路由 | 请求类型 |
+| ------------------- | ------------------------------------------------------------ | ------ | ---------------------- | ------------------ | -------- | -------- | -------- |
+| message_gen         | sender_id<br />receiver_id<br />content<br />source_type<br />source_id |        | 生成一条消息           |                    |          |          | 内部函数 |
+| message_query_all   | user_id(request.META自带)                                    |        | 查询登录用户的所有信息 | 用户已登录         |          |          | GET      |
+| message_confirm_all |                                                              |        | 所有消息设置为已读     | 用户已登录         |          |          | POST     |
+| message_confirm     | message_id                                                   |        | 改变message.status为1  | 用户已登录         |          |          | POST     |
 
 
 
