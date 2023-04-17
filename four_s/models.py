@@ -132,6 +132,29 @@ class NoticeConfirm(models.Model):
     notice_id = models.IntegerField()
 
 
+class Message(models.Model):
+    message_id = models.AutoField(primary_key=True)
+    sender_id = models.IntegerField()
+    receiver_id = models.IntegerField()
+    content = models.CharField(max_length=200)
+    source_type = models.IntegerField()         # (1: Post, 2: Comment)
+    source_id = models.IntegerField()
+    time = models.DateTimeField()
+    status = models.IntegerField()              # (0:未查看, 1:已查看)
+
+    def to_dict(self):
+        return {
+            'message_id': self.message_id,
+            'sender_id': self.sender_id,
+            'receiver_id': self.receiver_id,
+            'content': self.content,
+            'source_type': self.source_type,
+            'source_id': self.source_id,
+            'status': self.status,
+            'time': self.time.strftime('%Y-%m-%d %H:%I:%S')
+        }
+
+
 class Permission(models.Model):
     user_id = models.IntegerField()
     block_id = models.IntegerField()
