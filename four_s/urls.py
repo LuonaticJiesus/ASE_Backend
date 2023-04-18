@@ -6,6 +6,7 @@ from four_s.four_s_notice import *
 from four_s.four_s_permission import *
 from four_s.four_s_post import *
 from four_s.four_s_user import *
+from four_s.four_s_message import *
 
 urlpatterns = [
     # user
@@ -44,4 +45,9 @@ urlpatterns = [
     # permission
     path('permission/queryUser/', permission_query_user, name='permission_query_user'),
     path('permission/set/', permission_set, name='permission_set'),
+
+    # message
+    path('message/queryRec/', message_query_rec, name='message_query_rec'),
+    path('message/confirm/', message_confirm, name='message_confirm'),
+    path('message/confirmAll/', message_confirm_all, name='message_confirm_all'),
 ]
