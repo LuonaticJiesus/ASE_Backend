@@ -18,6 +18,7 @@ urlpatterns = [
     path('block/queryAll/', block_query_all, name='block_query_all'),
     path('block/queryPermission/', block_query_permission, name='block_query_permission'),
     path('block/subscribe/', block_subscribe, name='block_subscribe'),
+    path('block/random/', block_random, name='block_random'),
 
     # post
     path('post/queryTitle/', post_query_title, name='post_query_title'),

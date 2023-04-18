@@ -1,8 +1,10 @@
+import re
 import time
 from django.core import signing
 import hashlib
 
 from django.http import JsonResponse
+from django.urls import re_path
 
 HEADER = {'typ': 'JWP', 'alg': 'default'}
 KEY = 'four_s'
@@ -70,8 +72,8 @@ except ImportError:
 
 # 白名单，表示请求里面的路由时不验证登录信息
 API_WHITELIST = [
-    '/four_s/user/login/',
-    '/four_s/user/signup/'
+    r'/four_s/user/login/',
+    r'/four_s/user/signup/',
 ]
 
 
@@ -80,6 +82,8 @@ class AuthorizeMiddleware(MiddlewareMixin):
     def process_request(self, request):
         try:
             if request.path in API_WHITELIST:
+                return
+            if re.match(r'/admin/', request.path):
                 return
             user_id = str(request.META.get('HTTP_USERID'))
             token = request.META.get('HTTP_TOKEN')

@@ -68,6 +68,8 @@ class Block(models.Model):
     block_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     time = models.DateTimeField()
+    avatar = models.CharField(max_length=200)
+    info = models.CharField(max_length=200)
     # <0: 无需认证，0:需要路人认证，1:成员认证，2:助理认证，3:管理认证，>=4：超管认证
     approve_permission = models.IntegerField()
 
@@ -75,6 +77,8 @@ class Block(models.Model):
         return {
             'block_id': self.block_id,
             'name': self.name,
+            'avatar': self.avatar,
+            'info': self.info,
             'time': self.time.strftime('%Y-%m-%d %H:%I:%S'),
             'approve_permission': self.approve_permission
         }
