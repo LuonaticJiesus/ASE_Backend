@@ -122,6 +122,8 @@ def user_modify(request):
                 user.update(email=data.get('email'))
             if data.get('avatar') is not None:
                 user.update(avatar=data.get('avatar'))
+            if data.get('password') is not None:
+                user.update(password=data.get('password'))
             return JsonResponse({'status': 0, 'info': '已修改'})
     except Exception as e:
         print(e)
@@ -145,7 +147,7 @@ def user_change_pwd(request):
                 return JsonResponse({'status': -1, 'info': '用户不存在'})
             user.password = make_password(new_pwd)
             user.save()
-            return JsonResponse({'status': -0, 'info': '已修改'})
+            return JsonResponse({'status': 0, 'info': '已修改'})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，注册失败'})
