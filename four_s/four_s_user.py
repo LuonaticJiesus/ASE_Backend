@@ -5,11 +5,8 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from BackEnd.settings import SERVER_IP
 from four_s.models import UserInfo
 from utils.auth_util import create_token
-
-user_default_avatar = SERVER_IP + 'static/imgs/default.png'
 
 
 @csrf_exempt
@@ -31,7 +28,7 @@ def user_signup(request):
             if UserInfo.objects.filter(card_id=card_id).exists():
                 return JsonResponse({'status': -1, 'info': '卡id已存在'})
             password = make_password(password)
-            user = UserInfo(name=username, password=password, avatar=user_default_avatar,
+            user = UserInfo(name=username, password=password, avatar=None,
                             card_id=card_id, phone=phone, email=email, point=50)
             user.save()
             return JsonResponse({'status': 0, 'info': '注册成功'})

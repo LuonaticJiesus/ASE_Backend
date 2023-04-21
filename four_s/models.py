@@ -10,16 +10,17 @@ class UserInfo(models.Model):
     card_id = models.CharField(max_length=20, null=True)
     phone = models.CharField(max_length=20, null=True)
     email = models.CharField(max_length=50, null=True)
-    avatar = models.CharField(max_length=200)
+    avatar = models.CharField(max_length=200, null=True)
     point = models.IntegerField()
 
     def to_dict(self):
         ret = {
             'user_id': self.user_id,
             'name': self.name,
-            'point': self.point,
-            'avatar': self.avatar,
+            'point': self.point
         }
+        if self.avatar is not None:
+            ret['avatar'] = self.avatar
         if self.card_id is not None:
             ret['card_id'] = self.card_id
         if self.phone is not None:
