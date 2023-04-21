@@ -5,11 +5,8 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from BackEnd.settings import SERVER_IP
 from four_s.models import UserInfo
 from utils.auth_util import create_token
-
-user_default_avatar = SERVER_IP + 'static/imgs/default.png'
 
 
 @csrf_exempt
@@ -20,18 +17,18 @@ def user_signup(request):
         data = json.loads(request.body)
         username = data.get('username')
         password = data.get('password')
-        card_id = data.get('card_id') if data.__contains__('card_id') else ''
-        phone = data.get('phone') if data.__contains__('phone') else ''
-        email = data.get('email') if data.__contains__('email') else ''
+        card_id = data.get('card_id')
+        phone = data.get('phone')
+        email = data.get('email')
         with transaction.atomic():
             if username is None or password is None:
                 return JsonResponse({'status': -1, 'info': '用户名或密码为空'})
             if UserInfo.objects.filter(name=username).exists():
                 return JsonResponse({'status': -1, 'info': '用户名已存在'})
             if UserInfo.objects.filter(card_id=card_id).exists():
-                return JsonResponse({'status': -1, 'info': '用户名已存在'})
+                return JsonResponse({'status': -1, 'info': '卡id已存在'})
             password = make_password(password)
-            user = UserInfo(name=username, password=password, avatar=user_default_avatar,
+            user = UserInfo(name=username, password=password, avatar=None,
                             card_id=card_id, phone=phone, email=email, point=50)
             user.save()
             return JsonResponse({'status': 0, 'info': '注册成功'})
