@@ -52,9 +52,10 @@ def user_login(request):
         with transaction.atomic():
             if username is None or password is None:
                 return JsonResponse({'status': -1, 'info': '用户名或密码为空'})
-            user = UserInfo.objects.get(name=username)
-            if user is None:
+            user_query_set = UserInfo.objects.filter(name=username)
+            if not user_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '用户名不存在'})
+            user = user_query_set[0]
             if not check_password(password, user.password):
                 return JsonResponse({'status': -1, 'info': '用户名不存在'})
             user_token = create_token(str(user.user_id))
