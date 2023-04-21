@@ -46,6 +46,26 @@ def block_query_permission(request):
 
 
 @csrf_exempt
+def block_info(request):
+    if request.method != 'GET':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        block_id = request.GET.get('block_id')
+        if block_id is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        block_id = int(block_id)
+        with transaction.atomic():
+            block_query_set = Block.objects.filter(block_id=block_id)
+            if not block_query_set.exists():
+                return JsonResponse({'status': -1, 'info': '模块不存在'})
+            b_dict = block_query_set[0].to_dict()
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': b_dict})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
+
+
+@csrf_exempt
 def block_subscribe(request):
     if request.method != 'POST':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
