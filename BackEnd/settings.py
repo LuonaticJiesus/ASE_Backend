@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-' + get_random_string(50, chars)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
+SERVER_IP = 'http://112.126.71.119/'
 ALLOWED_HOSTS = ['*',]
 
 
@@ -88,7 +88,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'four_s_db',
-        'USER': 'aaa',
+        'USER': 'four_s_admin',
+        'PASSWORD': 'quad_ssss',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
@@ -132,9 +133,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR,'static'),
+    os.path.join(BASE_DIR, 'static'),
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 

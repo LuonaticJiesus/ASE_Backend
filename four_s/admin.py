@@ -3,7 +3,6 @@ from django.contrib import admin
 from four_s.models import *
 
 # Register your models here.
-admin.site.register(UserLogin)
 admin.site.register(UserInfo)
 admin.site.register(Post)
 admin.site.register(PostLike)

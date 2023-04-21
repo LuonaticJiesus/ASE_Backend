@@ -12,6 +12,9 @@ urlpatterns = [
     # user
     path('user/signup/', user_signup, name='user_signup'),
     path('user/login/', user_login, name='user_login'),
+    path('user/info/', user_info, name='user_info'),
+    path('user/myInfo/', user_my_info, name='user_my_info'),
+    path('user/modify/', user_modify, name='user_modify'),
     path('user/changePwd/', user_change_pwd, name='user_change_pwd'),
 
     # block

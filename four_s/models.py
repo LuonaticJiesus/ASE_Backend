@@ -1,10 +1,6 @@
 # python manage.py makemigrations, python manage.py migrate
+# python manage.py createsuperuser
 from django.db import models
-
-
-class UserLogin(models.Model):
-    user_id = models.IntegerField()
-    token = models.CharField(max_length=200)
 
 
 class UserInfo(models.Model):
@@ -12,8 +8,9 @@ class UserInfo(models.Model):
     name = models.CharField(max_length=200)
     password = models.CharField(max_length=200)
     card_id = models.CharField(max_length=20)
-    phone = models.CharField(max_length=20)
-    email = models.CharField(max_length=50)
+    phone = models.CharField(max_length=20, null=True)
+    email = models.CharField(max_length=50, null=True)
+    avatar = models.CharField(max_length=200)
     point = models.IntegerField()
 
     def to_dict(self):
@@ -21,7 +18,8 @@ class UserInfo(models.Model):
             'user_id': self.user_id,
             'name': self.name,
             'card_id': self.card_id,
-            'point': self.point
+            'point': self.point,
+            'avatar': self.avatar,
         }
         if self.phone is not None:
             ret['phone'] = self.phone
@@ -74,7 +72,7 @@ class Block(models.Model):
     approve_permission = models.IntegerField()
 
     def to_dict(self):
-        return {
+        ret = {
             'block_id': self.block_id,
             'name': self.name,
             'avatar': self.avatar,
@@ -82,6 +80,7 @@ class Block(models.Model):
             'time': self.time.strftime('%Y-%m-%d %H:%I:%S'),
             'approve_permission': self.approve_permission
         }
+        return ret
 
 
 class Comment(models.Model):
@@ -141,10 +140,10 @@ class Message(models.Model):
     sender_id = models.IntegerField()
     receiver_id = models.IntegerField()
     content = models.CharField(max_length=200)
-    source_type = models.IntegerField()         # (1: Post, 2: Comment)
+    source_type = models.IntegerField()  # (1: Post, 2: Comment)
     source_id = models.IntegerField()
     time = models.DateTimeField()
-    status = models.IntegerField()              # (0:未查看, 1:已查看)
+    status = models.IntegerField()  # (0:未查看, 1:已查看)
 
     def to_dict(self):
         return {
