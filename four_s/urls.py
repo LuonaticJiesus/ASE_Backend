@@ -21,7 +21,7 @@ urlpatterns = [
     path('block/queryAll/', block_query_all, name='block_query_all'),
     path('block/queryPermission/', block_query_permission, name='block_query_permission'),
     path('block/subscribe/', block_subscribe, name='block_subscribe'),
-    path('/block/info/', block_info, name='block_info'),
+    path('block/info/', block_info, name='block_info'),
     path('block/random/', block_random, name='block_random'),
 
     # post
@@ -49,6 +49,7 @@ urlpatterns = [
 
     # permission
     path('permission/queryUser/', permission_query_user, name='permission_query_user'),
+    path('permission/query/', permission_query, name='permission_query'),
     path('permission/set/', permission_set, name='permission_set'),
 
     # message

@@ -14,9 +14,14 @@ def permission_query_user(request):
     try:
         block_id = request.GET.get('permission')
         permission = request.GET.get('permission')
+        # check params
         if permission is None or block_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
+        block_id = int(block_id)
         permission = int(permission)
+        if permission not in [0, 1, 2, 3, 4]:
+            return JsonResponse({'status': -1, 'info': '参数错误'})
+        # db
         with transaction.atomic():
             if permission < 0:
                 perm_query_set = Permission.objects.filter(block_id=block_id)
@@ -33,6 +38,29 @@ def permission_query_user(request):
 
 
 @csrf_exempt
+def permission_query(request):
+    if request.method != 'GET':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        user_id = request.GET.get('user_id')
+        block_id = request.GET.get('block_id')
+        # check params
+        if user_id is None or block_id is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        user_id = int(user_id)
+        block_id = int(block_id)
+        # db
+        with transaction.atomic():
+            perm_query_set = Permission.objects.filter(user_id=user_id).filter(block_id=block_id)
+            if not perm_query_set.exists():
+                return JsonResponse({'status': 0, 'info': '查询成功', 'data': -1})
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': perm_query_set[0].permission})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
+
+
+@csrf_exempt
 def permission_set(request):
     if request.method != 'POST':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
@@ -42,10 +70,15 @@ def permission_set(request):
         user_id = data.get('user_id')
         block_id = data.get('block_id')
         permission = data.get('permission')
+        # check params
         if user_id is None or permission is None or block_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
+        user_id = int(user_id)
+        block_id = int(block_id)
+        permission = int(permission)
         if permission not in [0, 1, 2, 3, 4]:
             return JsonResponse({'status': -1, 'info': '权限错误'})
+        # db
         with transaction.atomic():
             if not UserInfo.objects.filter(user_id=user_id).exists():
                 return JsonResponse({'status': -1, 'info': '约束错误'})
@@ -73,4 +106,3 @@ def permission_set(request):
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误'})
-
