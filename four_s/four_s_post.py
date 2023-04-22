@@ -248,9 +248,9 @@ def post_choose(request):
         data = json.loads(request.body)
         post_id = data.get('post_id')
         chosen = data.get('chosen')
+        # check params
         if post_id is None or chosen is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
-        # check params
         post_id = int(post_id)
         chosen = int(chosen)
         if chosen not in [0, 1]:
