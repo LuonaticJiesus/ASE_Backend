@@ -34,7 +34,7 @@ def wrap_posts(post_query_set, user_id):
 
 
 def check_title(title: str):
-    return len(title) > 0
+    return 0 < len(title) < 200
 
 
 def check_txt(txt: str):
