@@ -33,15 +33,28 @@ def wrap_posts(post_query_set, user_id):
     return posts
 
 
+def check_title(title: str):
+    return len(title) > 0
+
+
+def check_txt(txt: str):
+    return len(txt) > 0
+
+
 @csrf_exempt
 def post_query_title(request):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
         user_id = int(request.META.get('HTTP_USERID'))
-        post_name = request.GET.get('post_name')
+        title = request.GET.get('title')
+        # check params
+        if title is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        title = str(title)
+        # db
         with transaction.atomic():
-            post_query_set = Post.objects.filter(title__contains=post_name)
+            post_query_set = Post.objects.filter(title__contains=title)
             posts = wrap_posts(post_query_set, user_id)
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
     except Exception as e:
@@ -56,12 +69,14 @@ def post_query_block(request):
     try:
         user_id = int(request.META.get('HTTP_USERID'))
         block_id = request.GET.get('block_id')
+        # check params
         if block_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         block_id = int(block_id)
+        # db
         with transaction.atomic():
             if not Block.objects.filter(block_id=block_id).exists():
-                return JsonResponse({'status': -1, 'info': '约束错误'})
+                return JsonResponse({'status': -1, 'info': '模块不存在'})
             post_query_set = Post.objects.filter(block_id=block_id).order_by('-time')
             posts = wrap_posts(post_query_set, user_id)
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
@@ -77,18 +92,44 @@ def post_query_user(request):
     try:
         userid = int(request.META.get('HTTP_USERID'))
         user_id = request.GET.get('user_id')
+        # check_params
         if user_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         user_id = int(user_id)
+        # db
         with transaction.atomic():
             if not UserInfo.objects.filter(user_id=user_id).exists():
-                return JsonResponse({'status': -1, 'info': '约束错误'})
+                return JsonResponse({'status': -1, 'info': '用户不存在'})
             post_query_set = Post.objects.filter(user_id=user_id).order_by('-time')
             posts = wrap_posts(post_query_set, userid)
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
+
+
+@csrf_exempt
+def post_query_chosen(request):
+    if request.method != 'GET':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        user_id = int(request.META.get('HTTP_USERID'))
+        block_id = request.GET.get('block_id')
+        # check params
+        if block_id is None:
+            return JsonResponse({'status': -1, 'info': '模块不存在'})
+        block_id = int(block_id)
+        # db
+        with transaction.atomic():
+            post_chosen_query_set = PostChosen.objects.filter(block_id=block_id)
+            posts = []
+            for chosen in post_chosen_query_set:
+                post = Post.objects.get(post_id=chosen.post_id)
+                posts.append(wrap_post(post, user_id))
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误'})
 
 
 @csrf_exempt
@@ -101,9 +142,17 @@ def post_publish(request):
         title = data.get('title')
         txt = data.get('txt')
         block_id = data.get('block_id')
+        # check params
         if title is None or txt is None or block_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         block_id = int(block_id)
+        title = str(title).strip('\t').strip(' ')
+        if not check_title(title):
+            return JsonResponse({'status': -1, 'info': '标题格式错误'})
+        txt = str(txt).strip('\t').strip(' ')
+        if not check_txt(txt):
+            return JsonResponse({'status': -1, 'info': '内容格式错误'})
+        # db
         with transaction.atomic():
             if not Block.objects.filter(block_id=block_id).exists():
                 return JsonResponse({'status': -1, 'info': '约束错误'})
@@ -126,9 +175,11 @@ def post_delete(request):
         user_id = int(request.META.get('HTTP_USERID'))
         data = json.loads(request.body)
         post_id = data.get('post_id')
+        # check_param
         if post_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         post_id = int(post_id)
+        # db
         with transaction.atomic():
             post_query_set = Post.objects.filter(post_id=post_id)
             if not post_query_set.exists():
@@ -161,9 +212,14 @@ def post_like(request):
         data = json.loads(request.body)
         post_id = data.get('post_id')
         like = data.get('like')
+        # check params
         if post_id is None or like is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         post_id = int(post_id)
+        like = int(like)
+        if like not in [0, 1]:
+            return JsonResponse({'status': -1, 'info': '参数错误'})
+        # db
         with transaction.atomic():
             post_query_set = Post.objects.filter(post_id=post_id)
             if not post_query_set.exists():
@@ -194,6 +250,12 @@ def post_choose(request):
         chosen = data.get('chosen')
         if post_id is None or chosen is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
+        # check params
+        post_id = int(post_id)
+        chosen = int(chosen)
+        if chosen not in [0, 1]:
+            return JsonResponse({'status': -1, 'info': '参数错误'})
+        # db
         with transaction.atomic():
             post_query_set = Post.objects.filter(post_id=post_id)
             if not post_query_set.exists():
@@ -208,27 +270,6 @@ def post_choose(request):
                 post_chosen = PostChosen(post_id=post_id, block_id=block_id)
                 post_chosen.save()
             return JsonResponse({'status': 0, 'info': '操作成功'})
-    except Exception as e:
-        print(e)
-        return JsonResponse({'status': -1, 'info': '操作错误'})
-
-
-@csrf_exempt
-def post_query_chosen(request):
-    if request.method != 'GET':
-        return JsonResponse({'status': -1, 'info': '请求方式错误'})
-    try:
-        user_id = int(request.META.get('HTTP_USERID'))
-        block_id = request.GET.get('block_id')
-        if block_id is None:
-            return JsonResponse({'status': -1, 'info': '模块不存在'})
-        with transaction.atomic():
-            post_chosen_query_set = PostChosen.objects.filter(block_id=block_id)
-            posts = []
-            for chosen in post_chosen_query_set:
-                post = Post.objects.get(post_id=chosen.post_id)
-                posts.append(wrap_post(post, user_id))
-            return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误'})
