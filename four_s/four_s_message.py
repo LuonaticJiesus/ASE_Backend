@@ -3,29 +3,8 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
-from datetime import datetime
 
 from four_s.models import Message, UserInfo
-
-
-def message_gen(sender_id, receiver_id, content, source_type, source_id):
-    try:
-        with transaction.atomic():
-            message = Message(
-                sender_id=sender_id,
-                receiver_id=receiver_id,
-                content=content,
-                source_type=source_type,
-                source_id=source_id,
-                time=datetime.now(),
-                status=0
-            )
-            message.save()
-            return message
-
-    except Exception as e:
-        print(e)
-        return None
 
 
 @csrf_exempt
@@ -33,17 +12,15 @@ def message_query_rec(request):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
-        receiver_id = request.GET.get('receiver_id')
-        if receiver_id is None:
-            return JsonResponse({'status': -1, 'info': '缺少参数'})
-        receiver_id = int(receiver_id)
+        user_id = int(request.META.get('HTTP_USERID'))
         with transaction.atomic():
-            messages_queryset = Message.objects.filter(receiver_id=receiver_id)
+            messages_queryset = Message.objects.filter(receiver_id=user_id)
             messages = []
+            receiver_name = UserInfo.objects.get(user_id=user_id).name
             for message in messages_queryset:
                 m_dict = message.to_dict()
                 m_dict['sender_name'] = UserInfo.objects.get(user_id=message.sender_id).name
-                m_dict['receiver_name'] = UserInfo.objects.get(user_id=message.receiver_id).name
+                m_dict['receiver_name'] = receiver_name
                 messages.append(m_dict)
 
             def cmp(element):
@@ -60,51 +37,39 @@ def message_query_rec(request):
 def message_confirm(request):
     if request.method != 'POST':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
-
     try:
         user_id = int(request.META.get('HTTP_USERID'))
         data = json.loads(request.body)
         message_id = data.get('message_id')
-        if message_id is None:
+        confirm = data.get('confirm')
+        # check params
+        if message_id is None or confirm is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
-
         message_id = int(message_id)
-
+        confirm = int(confirm)
+        if confirm not in [0, 1]:
+            return JsonResponse({'status': -1, 'info': '参数错误'})
+        # db
         with transaction.atomic():
-            message = Message.objects.get(message_id=message_id)
-            message.status = 1
-            message.save()
-
+            message_query_set = Message.objects.filter(message_id=message_id).filter(receiver_id=user_id)
+            if not message_query_set.exists():
+                return JsonResponse({'status': -1, 'info': '消息不存在'})
+            message_query_set.update(status=confirm)
             return JsonResponse({'status': 0, 'info': '消息状态已更新'})
-
-    except Message.DoesNotExist:
-        return JsonResponse({'status': -1, 'info': '找不到指定的消息'})
-
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，更新失败'})
+
 
 @csrf_exempt
 def message_confirm_all(request):
     if request.method != 'POST':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
-
     try:
-        data = json.loads(request.body)
-        user_id = data.get('user_id')
-        if user_id is None:
-            return JsonResponse({'status': -1, 'info': '缺少参数'})
-
-        user_id = int(user_id)
-
+        user_id = int(request.META.get('HTTP_USERID'))
         with transaction.atomic():
-            messages = Message.objects.filter(receiver_id=user_id, status=0)
-            for message in messages:
-                message.status = 1
-                message.save()
-
+            Message.objects.filter(receiver_id=user_id).filter(status=0).update(status=1)
             return JsonResponse({'status': 0, 'info': '所有消息状态已更新'})
-
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，更新失败'})
