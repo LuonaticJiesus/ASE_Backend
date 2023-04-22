@@ -33,7 +33,7 @@ def check_pwd(password: str):
 
 
 def check_card_id(card_id: str):
-    return True
+    return len(card_id) > 0
 
 
 def check_phone(phone: str):
@@ -45,7 +45,7 @@ def check_email(email: str):
 
 
 def check_avatar(avatar: str):
-    return True
+    return len(avatar) > 0
 
 
 @csrf_exempt
@@ -62,22 +62,22 @@ def user_signup(request):
         # check params
         if name is None or password is None:
             return JsonResponse({'status': -1, 'info': '用户名或密码为空'})
-        name = str(name)
+        name = str(name).strip('\t').strip(' ')
         if not check_name(name):
             return JsonResponse({'status': -1, 'info': '用户名格式错误'})
         password = str(password)
         if not check_pwd(password):
             return JsonResponse({'status': -1, 'info': '密码格式错误'})
         if card_id is not None:
-            card_id = str(card_id)
+            card_id = str(card_id).strip('\t').strip(' ')
             if not check_card_id(card_id):
                 return JsonResponse({'status': -1, 'info': '学工卡格式错误'})
         if phone is not None:
-            phone = str(phone)
+            phone = str(phone).strip('\t').strip(' ')
             if not check_phone(phone):
                 return JsonResponse({'status': -1, 'info': '手机格式错误'})
         if email is not None:
-            email = str(email)
+            email = str(email).strip('\t').strip(' ')
             if not check_email(email):
                 return JsonResponse({'status': -1, 'info': '邮箱格式错误'})
         # db
@@ -107,8 +107,8 @@ def user_login(request):
         # check params
         if name is None or password is None:
             return JsonResponse({'status': -1, 'info': '用户名或密码为空'})
-        name = str(name)
-        password = str(password)
+        name = str(name).strip(' ').strip('\t')
+        password = str(password).strip(' ').strip('\t')
         # db
         with transaction.atomic():
             user_query_set = UserInfo.objects.filter(name=name)
@@ -181,19 +181,19 @@ def user_modify(request):
         avatar = data.get('avatar')
         # check params
         if card_id is not None:
-            card_id = str(card_id)
+            card_id = str(card_id).strip('\t').strip(' ')
             if not check_card_id(card_id):
                 return JsonResponse({'status': -1, 'info': '学工卡格式错误'})
         if phone is not None:
-            phone = str(phone)
+            phone = str(phone).strip('\t').strip(' ')
             if not check_phone(phone):
                 return JsonResponse({'status': -1, 'info': '手机格式错误'})
         if email is not None:
-            email = str(email)
+            email = str(email).strip('\t').strip(' ')
             if not check_email(email):
                 return JsonResponse({'status': -1, 'info': '邮箱格式错误'})
         if avatar is not None:
-            avatar = str(avatar)
+            avatar = str(avatar).strip('\t').strip(' ')
             if not check_avatar(avatar):
                 return JsonResponse({'status': -1, 'info': '头像格式错误'})
         # db

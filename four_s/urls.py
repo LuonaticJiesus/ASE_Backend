@@ -28,11 +28,12 @@ urlpatterns = [
     path('post/queryTitle/', post_query_title, name='post_query_title'),
     path('post/queryBlock/', post_query_block, name='post_query_block'),
     path('post/queryUser/', post_query_user, name='post_query_user'),
+    path('post/queryChosen/', post_query_chosen, name='post_query_chosen'),
     path('post/publish/', post_publish, name='post_publish'),
     path('post/delete/', post_delete, name='post_delete'),
     path('post/like/', post_like, name='post_like'),
     path('post/choose/', post_choose, name='post_choose'),
-    path('post/queryChosen/', post_query_chosen, name='post_query_chosen'),
+
 
     # comment
     path('comment/queryPost/', comment_queryPost, name='comment_queryPost'),
