@@ -16,6 +16,10 @@ def wrap_comment(comm_dict, user_id):
         comment_id=comm_id).exists() else 0
 
 
+def check_txt(txt: str):
+    return len(txt) > 0
+
+
 @csrf_exempt
 def comment_queryPost(request):
     if request.method != 'GET':
@@ -23,11 +27,14 @@ def comment_queryPost(request):
     try:
         user_id = int(request.META.get('HTTP_USERID'))
         post_id = request.GET.get('post_id')
+        # check params
         if post_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
+        post_id = int(post_id)
+        # db
         with transaction.atomic():
             if Post.objects.filter(post_id=post_id).exists():
-                return JsonResponse({'status': -1, 'info': '约束错误'})
+                return JsonResponse({'status': -1, 'info': '帖子不存在'})
             comment_query_set = Comment.objects.filter(post_id=post_id)
             first_comments = {}
             second_comments = {}
@@ -70,9 +77,17 @@ def comment_publish(request):
         post_id = data.get('post_id')
         parent_id = data.get('parent_id')
         txt = data.get('txt')
+        # check params
+        if post_id is None or txt is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        post_id = int(post_id)
+        txt = str(txt).strip(' ').strip('\t')
+        if not check_txt(txt):
+            return JsonResponse({'status': -1, 'info': '内容格式错误'})
+        if parent_id is not None:
+            parent_id = int(parent_id)
+        # db
         with transaction.atomic():
-            if post_id is None or txt is None:
-                return JsonResponse({'status': -1, 'info': '缺少参数'})
             post_query_set = Post.objects.filter(post_id=post_id)
             if not post_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '约束错误'})
@@ -105,8 +120,11 @@ def comment_delete(request):
         user_id = int(request.META.get('HTTP_USERID'))
         data = json.loads(request.body)
         comment_id = data.get('post_id')
+        # check params
         if comment_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
+        comment_id = int(comment_id)
+        # db
         with transaction.atomic():
             comment_query_set = Comment.objects.filter(comment_id=comment_id)
             if not comment_query_set.exists():
@@ -138,9 +156,14 @@ def comment_like(request):
         data = json.loads(request.body)
         comment_id = data.get('comment_id')
         like = data.get('like')
+        # check params
         if comment_id is None or like is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         comment_id = int(comment_id)
+        like = int(like)
+        if like not in [0, 1]:
+            return JsonResponse({'status': -1, 'info': '参数格式错误'})
+        # db
         with transaction.atomic():
             comment_query_set = Comment.objects.filter(comment_id=comment_id)
             if not comment_query_set.exists():
