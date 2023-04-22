@@ -34,7 +34,6 @@ urlpatterns = [
     path('post/like/', post_like, name='post_like'),
     path('post/choose/', post_choose, name='post_choose'),
 
-
     # comment
     path('comment/queryPost/', comment_queryPost, name='comment_queryPost'),
     path('comment/publish/', comment_publish, name='comment_publish'),
@@ -46,6 +45,7 @@ urlpatterns = [
     path('notice/querySend/', notice_query_send, name='notice_query_send'),
     path('notice/queryBlock/', notice_query_block, name='notice_query_block'),
     path('notice/publish/', notice_publish, name='notice_publish'),
+    path('notice/confirm/', notice_confirm, name='notice_confirm'),
     path('notice/delete/', notice_delete, name='notice_delete'),
 
     # permission
