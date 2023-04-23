@@ -12,7 +12,7 @@ def permission_query_user(request):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
-        block_id = request.GET.get('permission')
+        block_id = request.GET.get('block_id')
         permission = request.GET.get('permission')
         # check params
         if permission is None or block_id is None:
