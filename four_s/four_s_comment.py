@@ -119,7 +119,7 @@ def comment_delete(request):
     try:
         user_id = int(request.META.get('HTTP_USERID'))
         data = json.loads(request.body)
-        comment_id = data.get('post_id')
+        comment_id = data.get('comment_id')
         # check params
         if comment_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
