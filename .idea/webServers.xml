@@ -2,10 +2,10 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="e61fa439-908f-49d6-8b7c-b2ecab3ba343" name="alpha_backend" url="http://112.126.71.119">
-        <fileTransfer rootFolder="/home/alpha_backend/src" accessType="SFTP" host="112.126.71.119" port="22" sshConfigId="2d3b80ca-5cd5-4d06-a043-d39fc32c2116" sshConfig="jie_ssh" keyPair="true">
+      <webServer id="b2f73b5b-2a2f-43c9-90c8-591e9a107475" name="alpha_backend" url="http://112.126.71.119">
+        <fileTransfer rootFolder="/home/alpha_backend/src" accessType="SFTP" host="112.126.71.119" port="22" sshConfigId="6fb395bf-418b-41ac-af8d-d2029513a1f3" sshConfig="root@112.126.71.119:22 key" keyPair="true">
           <advancedOptions>
-            <advancedOptions controlEncoding="utf8" dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
         </fileTransfer>
       </webServer>

@@ -2,9 +2,7 @@
 <project version="4">
   <component name="SshConfigs">
     <configs>
-      <sshConfig host="112.126.71.119" id="2d3b80ca-5cd5-4d06-a043-d39fc32c2116" keyPath="$USER_HOME$/.ssh/id_rsa" port="22" customName="jie_ssh" nameFormat="CUSTOM" username="root" useOpenSSHConfig="true">
-        <option name="customName" value="jie_ssh" />
-      </sshConfig>
+      <sshConfig host="112.126.71.119" id="6fb395bf-418b-41ac-af8d-d2029513a1f3" keyPath="$USER_HOME$/.ssh/id_rsa" port="22" nameFormat="DESCRIPTIVE" username="root" useOpenSSHConfig="true" />
     </configs>
   </component>
 </project>

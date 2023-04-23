@@ -5,7 +5,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from four_s.models import Post, Permission, Comment, CommentLike, UserInfo
+from four_s.models import Post, Permission, Comment, CommentLike, UserInfo, Message
 
 
 def wrap_comment(comm_dict, user_id):
@@ -106,6 +106,28 @@ def comment_publish(request):
                 return JsonResponse({'status': -1, 'info': '权限不足'})
             comment = Comment(user_id=user_id, post_id=post_id, parent_id=parent_id, txt=txt, time=datetime.now())
             comment.save()
+            # send a message
+            user_name = UserInfo.objects.get(user_id=user_id).name
+            content = f"{user_name}回复了您的帖子[{post.title}]!"
+            message = Message(sender_id=user_id,
+                              receiver_id=post.user_id,
+                              content=content,
+                              source_type=1,            # 帖子
+                              source_id=post_id,
+                              time=datetime.now(),
+                              status=0)
+            message.save()
+            if parent_id is not None:
+                content = f"{user_name}在帖子[{post.title}]中回复了您的评论!"
+                receiver_id = Comment.objects.get(comment_id=parent_id).user_id
+                message = Message(sender_id=user_id,
+                                  receiver_id=receiver_id,
+                                  content=content,
+                                  source_type=1,        # 帖子
+                                  source_id=post_id,
+                                  time=datetime.now(),
+                                  status=0)
+                message.save()
             return JsonResponse({'status': -0, 'info': '已发布'})
     except Exception as e:
         print(e)
@@ -119,7 +141,7 @@ def comment_delete(request):
     try:
         user_id = int(request.META.get('HTTP_USERID'))
         data = json.loads(request.body)
-        comment_id = data.get('post_id')
+        comment_id = data.get('comment_id')
         # check params
         if comment_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
