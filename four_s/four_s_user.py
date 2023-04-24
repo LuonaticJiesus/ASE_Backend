@@ -221,10 +221,12 @@ def user_change_pwd(request):
         user_id = int(request.META.get('HTTP_USERID'))
         data = json.loads(request.body)
         password = data.get('password')
+        old_password = data.get('old_password')
         # check params
-        if password is None:
-            return JsonResponse({'status': -1, 'info': '新密码不存在'})
+        if password is None or old_password is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
         password = str(password)
+        old_password = str(old_password)
         if not check_pwd(password):
             return JsonResponse({'status': -1, 'info': '新密码格式错误'})
         # db
@@ -233,6 +235,8 @@ def user_change_pwd(request):
             user = UserInfo.objects.filter(user_id=user_id)
             if not user.exists():
                 return JsonResponse({'status': -1, 'info': '用户不存在'})
+            if not check_password(old_password, user.password):
+                return JsonResponse({'status': -1, 'info': '旧密码错误'})
             user.update(password=make_password(password))
             return JsonResponse({'status': 0, 'info': '已修改'})
     except Exception as e:

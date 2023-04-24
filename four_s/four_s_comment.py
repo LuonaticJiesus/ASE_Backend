@@ -157,7 +157,7 @@ def comment_delete(request):
             if not user_permission_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '权限不足'})
             user_permission = user_permission_query_set[0].permission
-            if user_permission < 2:
+            if user_permission < 2 or user_id != comment.user_id:
                 return JsonResponse({'status': -1, 'info': '权限不足'})
             # delete
             if comment.parent_id is None:
