@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 from django.utils.crypto import get_random_string
 
+from BackEnd import global_config
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -87,9 +89,9 @@ WSGI_APPLICATION = 'BackEnd.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'four_s_db',
-        'USER': 'four_s_admin',
-        'PASSWORD': 'quad_ssss',
+        'NAME': global_config['databases']['default']['name'],
+        'USER': global_config['databases']['default']['user'],
+        'PASSWORD': global_config['databases']['default']['password'],
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }

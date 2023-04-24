@@ -6,10 +6,12 @@ from django.utils.crypto import get_random_string
 from django.views.decorators.csrf import csrf_exempt
 from qcloud_cos import CosConfig, CosS3Client
 
-tencent_cos_secret_id = 'AKIDOfyPp8EJKYbQ3Ts66uhTD1pdOAlMl02p'
-tencent_cos_secret_key = 'vLSYRFtHOk03rRoy3wmQWXNxKTOL5jEX'
-tencent_cos_region = 'ap-beijing'
-tencent_cos_bucket = '2023-ase-quadssss-1314332102'
+from BackEnd import global_config
+
+tencent_cos_secret_id = global_config['tencent_cos']['secret_id']
+tencent_cos_secret_key = global_config['tencent_cos']['secret_key']
+tencent_cos_region = global_config['tencent_cos']['region']
+tencent_cos_bucket = global_config['tencent_cos']['bucket']
 tencent_cos_config = CosConfig(Region=tencent_cos_region, SecretId=tencent_cos_secret_id,
                                SecretKey=tencent_cos_secret_key, Timeout=1)
 tencent_cos_client = CosS3Client(tencent_cos_config, retry=0)
