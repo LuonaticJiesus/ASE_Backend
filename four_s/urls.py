@@ -2,6 +2,7 @@ from django.urls import path
 
 from four_s.four_s_block import *
 from four_s.four_s_comment import *
+from four_s.four_s_file import *
 from four_s.four_s_notice import *
 from four_s.four_s_permission import *
 from four_s.four_s_post import *
@@ -57,4 +58,7 @@ urlpatterns = [
     path('message/queryRec/', message_query_rec, name='message_query_rec'),
     path('message/confirm/', message_confirm, name='message_confirm'),
     path('message/confirmAll/', message_confirm_all, name='message_confirm_all'),
+
+    # file
+    path('file/upload/', file_upload, name='file_upload'),
 ]
