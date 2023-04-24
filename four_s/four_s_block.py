@@ -1,4 +1,5 @@
 import json
+import random
 
 from django.db import transaction
 from django.http import JsonResponse
@@ -116,7 +117,25 @@ def block_random(request):
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
         user_id = int(request.META.get('HTTP_USERID'))
-
+        number = request.GET.get('number')
+        # check params
+        if number is None:
+            number = 20
+        number = int(number)
+        if number <= 0:
+            number = 20
+        # db
+        with transaction.atomic():
+            headers = ['block_id', 'name', 'avatar', 'info']
+            header = headers[random.randint(0, 3)]
+            if random.randint(0, 1) == 0:
+                header = '-' + header
+            block_query_set = Block.objects.all().order_by(header)[:number]
+            blocks = []
+            for b in block_query_set:
+                b_dict = b.to_dict()
+                blocks.append(b_dict)
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': blocks})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
