@@ -42,7 +42,8 @@ def file_upload(request):
         if response is None:
             return JsonResponse({'status': -1, 'info': '上传失败'})
         file_url = 'https://{}.cos.{}.myqcloud.com/{}'.format(tencent_cos_bucket, tencent_cos_region, file_key)
-        return JsonResponse({'status': 0, 'info': '上传成功', 'data': file_url})
+        return JsonResponse({'status': 0, 'info': '上传成功',
+                             'data': {'url': file_url}})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，上传失败'})
