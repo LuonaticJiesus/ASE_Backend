@@ -27,9 +27,11 @@ chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
 SECRET_KEY = 'django-insecure-' + get_random_string(50, chars)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 SERVER_IP = 'http://112.126.71.119/'
-ALLOWED_HOSTS = ['*',]
+ALLOWED_HOSTS = [
+    '*',
+]
 
 
 # Application definition
