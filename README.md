@@ -201,7 +201,7 @@
 | block_query_permission | user_id(request.META自带)<br />permission                    |        |                                                              |                    |                      | `block/queryPermission/` | GET      |
 | block_info             | block_id                                                     |        | 查询模块信息                                                 |                    |                      | block/info/              | GET      |
 | block_subscribe        | user_id(request.META自带)<br />block_id<br />subscribe(0:取消订阅) |        | subscribe=0:取消订阅<br />subscribe=1:订阅，`update_perm = 1 if block_perm < 0 else 0` |                    | subscribe范围非[0,1] | `block/subscribe/`       | POST     |
-| block_random           |                                                              |        |                                                              |                    |                      |                          | GET      |
+| block_random           | user_id(request.META自带)<br />number(默认值20)              |        | 随机选取['block_id', 'name', 'avatar', 'info']中的一项排序，获取前number个block |                    |                      | `block/random/`          | GET      |
 
 
 
@@ -277,4 +277,4 @@
 | user_info       | user_id                                                      |                   | 查询user_id 的名字和头像       |                    |                                                    | user/info/        | POST     |
 | user_my_info    |                                                              |                   | 查询个人所有信息               |                    |                                                    | user/myInfo/      | POST     |
 | user_modify     | user_id(request.META自带)<br />card_id<br />phone<br />email<br />avatar |                   | 根据提供的非空参数更新用户信息 |                    |                                                    | user/modify/      | POST     |
-| user_change_pwd | user_id(request.META自带)<br />password                      |                   |                                |                    |                                                    | `user/changePwd/` | POST     |
+| user_change_pwd | user_id(request.META自带)<br />password                      |                   |                                |                    | 用户不存在<br />旧密码错误                         | `user/changePwd/` | POST     |
