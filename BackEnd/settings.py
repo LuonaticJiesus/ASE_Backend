@@ -145,8 +145,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# 使用session保存用户登录状态
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_NAME = 'sessionid'
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_SAVE_EVERY_REQUEST = True
+# # 使用session保存用户登录状态
+# SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+# SESSION_COOKIE_NAME = 'sessionid'
+# SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# SESSION_SAVE_EVERY_REQUEST = True
+
+# email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = global_config['email']['host']
+EMAIL_PORT = 25
+EMAIL_HOST_USER = global_config['email']['host_user']
+EMAIL_HOST_PASSWORD = global_config['email']['host_password']
+EMAIL_FROM = 'quad_ssss_verify'
+EMAIL_USE_TLS = True

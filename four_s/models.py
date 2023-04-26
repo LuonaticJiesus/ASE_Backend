@@ -171,3 +171,18 @@ class Contribution(models.Model):
     user_id = models.IntegerField()
     block_id = models.IntegerField()
     contribution = models.IntegerField()
+
+
+class EmailPro(models.Model):
+    code = models.CharField(max_length=20, verbose_name='验证码')
+    email = models.EmailField(max_length=50, verbose_name='邮箱')
+    send_type = models.CharField(max_length=50,
+                                 choices=(('regster', '邮箱注册'), ('forget', '忘记密码')),
+                                 verbose_name='发送类型')
+    send_time = models.DateTimeField(auto_now_add=True, verbose_name='发送时间')
+
+    name = models.CharField(max_length=200)
+    password = models.CharField(max_length=200)
+    card_id = models.CharField(max_length=20, null=True)
+    phone = models.CharField(max_length=20, null=True)
+    avatar = models.CharField(max_length=200, null=True)
