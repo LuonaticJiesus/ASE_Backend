@@ -45,7 +45,7 @@ def check_email(email: str):
 
 
 def check_avatar(avatar: str):
-    return len(avatar) > 0
+    return 0 < len(avatar) < 200
 
 
 @csrf_exempt
