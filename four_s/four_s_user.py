@@ -1,12 +1,15 @@
 import json
 import re
+from random import Random
 
 from django.contrib.auth.hashers import make_password, check_password
+from django.core.mail import send_mail
 from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from four_s.models import UserInfo
+from BackEnd.settings import EMAIL_HOST_USER
+from four_s.models import UserInfo, EmailPro
 from utils.auth_util import create_token
 
 
@@ -48,6 +51,15 @@ def check_avatar(avatar: str):
     return 0 < len(avatar) < 200
 
 
+def random_str(randomlength=8):
+    str=''
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    length = len(chars)-1
+    random = Random()
+    for i in range(randomlength):
+        str += chars[random.randint(0, length)]
+    return str
+
 @csrf_exempt
 def user_signup(request):
     if request.method != 'POST':
@@ -86,14 +98,52 @@ def user_signup(request):
                 return JsonResponse({'status': -1, 'info': '用户名已存在'})
             if card_id is not None and UserInfo.objects.filter(card_id=card_id).exists():
                 return JsonResponse({'status': -1, 'info': '卡id已存在'})
+            if email is not None and UserInfo.objects.filter(email=email).exists():
+                return JsonResponse({'status': -1, 'info': '邮箱已注册'})
             password = make_password(password)
-            user = UserInfo(name=name, password=password, avatar=None,
-                            card_id=card_id, phone=phone, email=email, point=50)
-            user.save()
-            return JsonResponse({'status': 0, 'info': '注册成功'})
+
+            # send verification email
+            send_type = 'register'
+            code = random_str(16)  # 生成16位的随机字符串
+            email_recode = EmailPro(code=code, email=email, send_type=send_type,
+                                    name=name, password=password, card_id=card_id,
+                                    phone=phone)
+            email_recode.save()
+
+            email_title = ''
+            email_body = ''
+            if send_type == 'register':
+                email_title = '注册激活链接'
+                email_body = '请点击下方的链接激活你的账号：http://127.0.0.1:8000/active/{0}'.format(code)
+            else:
+                pass  # 忘记密码--暂时不写
+            send_status = send_mail(email_title, email_body, EMAIL_HOST_USER, [email])
+            if send_status:
+                return JsonResponse({'status': 0, 'info': '发送成功，请查看邮箱'})
+            return JsonResponse({'status': -1, 'info': '操作错误，发送失败'})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，注册失败'})
+
+
+def active_email(request, active_code):
+    if request.method != 'GET':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        all_codes = EmailPro.objects.filter(code=active_code)
+        # db
+        with transaction.atomic():
+            if all_codes.exists():
+                info = all_codes[0]
+                user = UserInfo(name=info.name, password=info.password, avatar=None,
+                                card_id=info.card_id, phone=info.phone, email=info.email, point=50)
+                user.save()
+                return JsonResponse({'status': 0, 'info': '注册成功'})
+            return JsonResponse({'status': -1, 'info': '操作错误，注册失败'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误，注册失败'})
+
 
 
 @csrf_exempt
