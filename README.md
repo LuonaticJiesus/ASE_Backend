@@ -277,4 +277,4 @@
 | user_info       | user_id                                                      |                   | 查询user_id 的名字和头像       |                    |                                                    | user/info/        | POST     |
 | user_my_info    |                                                              |                   | 查询个人所有信息               |                    |                                                    | user/myInfo/      | POST     |
 | user_modify     | user_id(request.META自带)<br />card_id<br />phone<br />email<br />avatar |                   | 根据提供的非空参数更新用户信息 |                    |                                                    | user/modify/      | POST     |
-| user_change_pwd | user_id(request.META自带)<br />password                      |                   |                                |                    | 用户不存在<br />旧密码错误                         | `user/changePwd/` | POST     |
+| user_change_pwd | user_id(request.META自带)<br />old_password                  |                   |                                |                    | 用户不存在<br />旧密码错误                         | `user/changePwd/` | POST     |
