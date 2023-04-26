@@ -1,3 +1,4 @@
+import datetime
 import json
 import re
 from random import Random
@@ -8,7 +9,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from BackEnd.settings import EMAIL_HOST_USER
+from BackEnd.settings import EMAIL_HOST_USER, SERVER_IP
 from four_s.models import UserInfo, EmailPro
 from utils.auth_util import create_token
 
@@ -114,7 +115,7 @@ def user_signup(request):
             email_body = ''
             if send_type == 'register':
                 email_title = '注册激活链接'
-                email_body = '请点击下方的链接激活你的账号：http://127.0.0.1:8000/active/{0}'.format(code)
+                email_body = '请点击下方的链接激活你的账号：' + SERVER_IP + ':8000/four_s/active/{0}'.format(code)
             else:
                 pass  # 忘记密码--暂时不写
             send_status = send_mail(email_title, email_body, EMAIL_HOST_USER, [email])
@@ -130,14 +131,17 @@ def active_email(request, active_code):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
-        all_codes = EmailPro.objects.filter(code=active_code)
         # db
         with transaction.atomic():
+            all_codes = EmailPro.objects.filter(code=active_code)
             if all_codes.exists():
                 info = all_codes[0]
+                if datetime.datetime.now() + datetime.timedelta(minutes=30) < info.send_time:
+                    return JsonResponse({'status': -1, 'info': '超时，请重新注册'})
                 user = UserInfo(name=info.name, password=info.password, avatar=None,
                                 card_id=info.card_id, phone=info.phone, email=info.email, point=50)
                 user.save()
+                all_codes.delete()
                 return JsonResponse({'status': 0, 'info': '注册成功'})
             return JsonResponse({'status': -1, 'info': '操作错误，注册失败'})
     except Exception as e:
