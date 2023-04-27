@@ -74,6 +74,7 @@ except ImportError:
 API_WHITELIST = [
     r'/four_s/user/login/',
     r'/four_s/user/signup/',
+    r'/four_s/user/active/',
 ]
 
 

@@ -155,7 +155,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = global_config['email']['host']
-EMAIL_PORT = 25
+EMAIL_PORT = global_config['email']['port']
 EMAIL_HOST_USER = global_config['email']['host_user']
 EMAIL_HOST_PASSWORD = global_config['email']['host_password']
 EMAIL_FROM = 'quad_ssss_verify'

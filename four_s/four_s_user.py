@@ -74,8 +74,8 @@ def user_signup(request):
         phone = data.get('phone')
         email = data.get('email')
         # check params
-        if name is None or password is None:
-            return JsonResponse({'status': -1, 'info': '用户名或密码为空'})
+        if name is None or password is None or email is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
         name = str(name).strip('\t').strip(' ')
         if not check_name(name):
             return JsonResponse({'status': -1, 'info': '用户名格式错误'})
@@ -90,17 +90,16 @@ def user_signup(request):
             phone = str(phone).strip('\t').strip(' ')
             if not check_phone(phone):
                 return JsonResponse({'status': -1, 'info': '手机格式错误'})
-        if email is not None:
-            email = str(email).strip('\t').strip(' ')
-            if not check_email(email):
-                return JsonResponse({'status': -1, 'info': '邮箱格式错误'})
+        email = str(email).strip('\t').strip(' ')
+        if not check_email(email):
+            return JsonResponse({'status': -1, 'info': '邮箱格式错误'})
         # db
         with transaction.atomic():
             if UserInfo.objects.filter(name=name).exists():
                 return JsonResponse({'status': -1, 'info': '用户名已存在'})
             if card_id is not None and UserInfo.objects.filter(card_id=card_id).exists():
                 return JsonResponse({'status': -1, 'info': '卡id已存在'})
-            if email is not None and UserInfo.objects.filter(email=email).exists():
+            if UserInfo.objects.filter(email=email).exists():
                 return JsonResponse({'status': -1, 'info': '邮箱已注册'})
             password = make_password(password)
 
@@ -116,7 +115,7 @@ def user_signup(request):
             email_body = ''
             if send_type == 'register':
                 email_title = '注册激活链接'
-                email_body = '请点击下方的链接激活你的账号：' + SERVER_IP + ':' + SERVER_PORT + '/four_s/user/active/{0}'.format(code)
+                email_body = '请点击下方的链接激活你的账号：http://' + SERVER_IP + ':' + SERVER_PORT + '/four_s/user/active/{0}'.format(code)
             else:
                 pass  # 忘记密码--暂时不写
             send_status = send_mail(email_title, email_body, EMAIL_HOST_USER, [email])
