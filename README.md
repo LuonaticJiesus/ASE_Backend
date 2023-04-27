@@ -15,16 +15,32 @@
 
 主键：user_id
 
-| 属性名   | 类型         | 限制                 | 说明    |
-| -------- | ------------ | -------------------- | ------- |
-| user_id  | AutoField    |                      |         |
-| name     | CharField    | max_length=200       |         |
-| password | CharField    | max_length=200       |         |
-| card_id  | CharField    | max_length=200       | 学号    |
-| phone    | CharField    | max_length=20，可空  |         |
-| email    | CharField    | max_length=50，可空  |         |
-| avatar   | CharField    | max_length=200，可空 | 头像url |
-| point    | IntegerField |                      |         |
+| 属性名   | 类型         | 限制                 | 说明         |
+| -------- | ------------ | -------------------- | ------------ |
+| user_id  | AutoField    |                      |              |
+| name     | CharField    | max_length=200       |              |
+| password | CharField    | max_length=200       | 已加密的密码 |
+| card_id  | CharField    | max_length=200       | 学号         |
+| phone    | CharField    | max_length=20，可空  |              |
+| email    | CharField    | max_length=50，可空  |              |
+| avatar   | CharField    | max_length=200，可空 | 头像url      |
+| point    | IntegerField |                      |              |
+
+
+
+### EmailPro
+
+| 属性名    | 类型          | 限制                                                         | 说明               |
+| --------- | ------------- | ------------------------------------------------------------ | ------------------ |
+| code      | CharField     | max_length=20                                                |                    |
+| email     | CharField     | max_length=50                                                |                    |
+| send_type | CharField     | max_length=50, choices=(('regster', '邮箱注册'), ('forget', '忘记密码')) |                    |
+| send_time | DateTimeField | auto_now_add=True                                            | 邮箱验证有生存时间 |
+| name      | CharField     | max_length=200                                               |                    |
+| password  | CharField     | max_length=50                                                | 已加密的密码       |
+| card_id   | CharField     | max_length=200                                               | 学号               |
+| phone     | CharField     | max_length=20，可空                                          |                    |
+| avatar    | CharField     | max_length=200，可空                                         | 头像url            |
 
 
 
@@ -270,11 +286,12 @@
 
 ### `four_s_user.py`
 
-| 函数名          | 传入参数                                                     | 返回值            | 功能（考虑贡献值）             | 前置条件（权限等） | 异常处理                                           | 接口路由          | 请求类型 |
-| --------------- | ------------------------------------------------------------ | ----------------- | ------------------------------ | ------------------ | -------------------------------------------------- | ----------------- | -------- |
-| user_signup     | username<br />password<br />card_id(==可以为空吗？==)<br />phone(可空)<br />email(可空) |                   |                                |                    | 用户名或密码为空<br />用户名已存在<br />学号已存在 | `user/signup/`    | POST     |
-| user_login      | username<br />password                                       | userid<br />token |                                |                    |                                                    | `user/login/`     | POST     |
-| user_info       | user_id                                                      |                   | 查询user_id 的名字和头像       |                    |                                                    | user/info/        | POST     |
-| user_my_info    |                                                              |                   | 查询个人所有信息               |                    |                                                    | user/myInfo/      | POST     |
-| user_modify     | user_id(request.META自带)<br />card_id<br />phone<br />email<br />avatar |                   | 根据提供的非空参数更新用户信息 |                    |                                                    | user/modify/      | POST     |
-| user_change_pwd | user_id(request.META自带)<br />old_password                  |                   |                                |                    | 用户不存在<br />旧密码错误                         | `user/changePwd/` | POST     |
+| 函数名          | 传入参数                                                     | 返回值            | 功能（考虑贡献值）               | 前置条件（权限等）                   | 异常处理                                                     | 接口路由                            | 请求类型 |
+| --------------- | ------------------------------------------------------------ | ----------------- | -------------------------------- | ------------------------------------ | ------------------------------------------------------------ | ----------------------------------- | -------- |
+| user_signup     | username<br />password<br />card_id(==可以为空吗？==)<br />phone(可空)<br />email==(可空 -> 不为空)== |                   | 用户注册，向注册邮箱发送认证链接 | ==邮箱限制为北航邮箱（与学号对应）== | 用户名或密码为空<br />用户名已存在<br />学号已存在<br />邮箱已注册 | `user/signup/`                      | POST     |
+| active_email    |                                                              |                   | 邮箱认证，注册成功               |                                      |                                                              | `user/active/(?P<active_code>.*)/$` | GET      |
+| user_login      | username<br />password                                       | userid<br />token |                                  |                                      |                                                              | `user/login/`                       | POST     |
+| user_info       | user_id                                                      |                   | 查询user_id 的名字和头像         |                                      |                                                              | user/info/                          | POST     |
+| user_my_info    |                                                              |                   | 查询个人所有信息                 |                                      |                                                              | user/myInfo/                        | POST     |
+| user_modify     | user_id(request.META自带)<br />card_id<br />phone<br />email<br />avatar |                   | 根据提供的非空参数更新用户信息   |                                      |                                                              | user/modify/                        | POST     |
+| user_change_pwd | user_id(request.META自带)<br />old_password                  |                   |                                  |                                      | 用户不存在<br />旧密码错误                                   | `user/changePwd/`                   | POST     |
