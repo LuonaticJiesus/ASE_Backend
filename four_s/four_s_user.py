@@ -9,7 +9,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from BackEnd.settings import EMAIL_HOST_USER, SERVER_IP
+from BackEnd.settings import EMAIL_HOST_USER, SERVER_IP, SERVER_PORT
 from four_s.models import UserInfo, EmailPro
 from utils.auth_util import create_token
 
@@ -53,13 +53,14 @@ def check_avatar(avatar: str):
 
 
 def random_str(randomlength=8):
-    str=''
+    str = ''
     chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-    length = len(chars)-1
+    length = len(chars) - 1
     random = Random()
     for i in range(randomlength):
         str += chars[random.randint(0, length)]
     return str
+
 
 @csrf_exempt
 def user_signup(request):
@@ -115,7 +116,7 @@ def user_signup(request):
             email_body = ''
             if send_type == 'register':
                 email_title = '注册激活链接'
-                email_body = '请点击下方的链接激活你的账号：' + SERVER_IP + ':8000/four_s/user/active/{0}'.format(code)
+                email_body = '请点击下方的链接激活你的账号：' + SERVER_IP + ':' + SERVER_PORT + '/four_s/user/active/{0}'.format(code)
             else:
                 pass  # 忘记密码--暂时不写
             send_status = send_mail(email_title, email_body, EMAIL_HOST_USER, [email])
@@ -127,6 +128,7 @@ def user_signup(request):
         return JsonResponse({'status': -1, 'info': '操作错误，注册失败'})
 
 
+@csrf_exempt
 def active_email(request, active_code):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
@@ -147,7 +149,6 @@ def active_email(request, active_code):
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，注册失败'})
-
 
 
 @csrf_exempt
