@@ -74,7 +74,6 @@ except ImportError:
 API_WHITELIST = [
     r'/four_s/user/login/',
     r'/four_s/user/signup/',
-    r'/four_s/user/active/',
 ]
 
 
@@ -85,6 +84,8 @@ class AuthorizeMiddleware(MiddlewareMixin):
             if request.path in API_WHITELIST:
                 return
             if re.match(r'/four_s/admin/', request.path):
+                return
+            if re.match(r'/four_s/user/active/', request.path):
                 return
             user_id = str(request.META.get('HTTP_USERID'))
             token = request.META.get('HTTP_TOKEN')

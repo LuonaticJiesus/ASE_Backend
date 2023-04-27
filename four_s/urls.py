@@ -21,7 +21,7 @@ urlpatterns = [
     path('user/myInfo/', user_my_info, name='user_my_info'),
     path('user/modify/', user_modify, name='user_modify'),
     path('user/changePwd/', user_change_pwd, name='user_change_pwd'),
-    path('user/active/(?P<active_code>.*)/$', active_email, name='user_check_email'),
+    path('user/active/', active_email, name='user_check_email'),
 
     # block
     path('block/queryAll/', block_query_all, name='block_query_all'),
