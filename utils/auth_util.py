@@ -83,7 +83,7 @@ class AuthorizeMiddleware(MiddlewareMixin):
         try:
             if request.path in API_WHITELIST:
                 return
-            if re.match(r'/admin/', request.path):
+            if re.match(r'/four_s/admin/', request.path):
                 return
             user_id = str(request.META.get('HTTP_USERID'))
             token = request.META.get('HTTP_TOKEN')

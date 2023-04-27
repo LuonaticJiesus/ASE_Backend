@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.urls import path
 
 from four_s.four_s_block import *
@@ -10,6 +11,9 @@ from four_s.four_s_user import *
 from four_s.four_s_message import *
 
 urlpatterns = [
+    # admin
+    path('admin/', admin.site.urls),
+
     # user
     path('user/signup/', user_signup, name='user_signup'),
     path('user/login/', user_login, name='user_login'),
