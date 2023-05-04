@@ -102,10 +102,10 @@ def block_subscribe(request):
             update_perm = 1 if block_perm < 0 else 0
             if perm_query_set.exists():
                 perm_query_set.update(permission=update_perm)
-                return JsonResponse({'status': -1, 'info': '已订阅'})
+                return JsonResponse({'status': 0, 'info': '已订阅'})
             new_perm = Permission(user_id=user_id, block_id=block_id, permission=update_perm)
             new_perm.save()
-            return JsonResponse({'status': -1, 'info': '已订阅'})
+            return JsonResponse({'status': 0, 'info': '已订阅'})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
