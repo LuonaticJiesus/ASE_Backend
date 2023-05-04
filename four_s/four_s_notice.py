@@ -5,7 +5,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from four_s.models import Notice, UserInfo, Block, NoticeConfirm, Permission
+from four_s.models import Notice, UserInfo, Block, NoticeConfirm, Permission, BlockSubscribe
 
 
 def check_title(title: str):
@@ -42,13 +42,11 @@ def notice_query_recv(request):
             return JsonResponse({'status': -1, 'info': '参数错误'})
         # db
         with transaction.atomic():
-            permission_queryset = Permission.objects.filter(user_id=user_id).filter(permission__gte=1)
-            block_id_set = set()
-            for p in permission_queryset:
-                block_id_set.add(p.block_id)
+            subscribe_query_set = BlockSubscribe.objects.filter(user_id=user_id)
             notice_id_set = set()
             now_time = datetime.now()
-            for bid in block_id_set:
+            for sub in subscribe_query_set:
+                bid = sub.block_id
                 if undue_op == 0:
                     block_notice_queryset = Notice.objects.filter(block_id=bid)
                 elif undue_op > 0:
@@ -201,8 +199,8 @@ def notice_confirm(request):
                 return JsonResponse({'status': -1, 'info': '通知不存在'})
             notice = notice_query_set[0]
             block_id = notice.block_id
-            if not Permission.objects.filter(block_id=block_id).filter(user_id=user_id).exists():
-                return JsonResponse({'status': -1, 'info': '未订阅模块'})
+            if not BlockSubscribe.objects.filter(block_id=block_id).filter(user_id=user_id).exists():
+                return JsonResponse({'status': 0, 'info': '未订阅模块'})
             if confirm == 0:
                 NoticeConfirm.objects.filter(notice_id=notice_id).filter(user_id=user_id).delete()
                 return JsonResponse({'status': 0, 'info': '已取消确认'})
