@@ -10,7 +10,7 @@ from four_s.models import Block, Permission
 
 def wrap_block(block_dict):
     block_id = block_dict['block_id']
-    block_dict['population'] = Permission.objects.filter(block_id=block_id).filter(permission=1).count()    # count students only
+    block_dict['population'] = Permission.objects.filter(block_id=block_id).filter(permission__gte=1).count()    # count students only
     return block_dict
 
 @csrf_exempt
