@@ -63,6 +63,7 @@ def post_query_title(request):
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
 
 
+@csrf_exempt
 def post_query_by_id(request):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
