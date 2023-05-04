@@ -105,6 +105,30 @@ def notice_query_send(request):
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
 
 
+def notice_query_by_id(request):
+    if request.method != 'GET':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        notice_id = request.GET.get('notice_id')
+        # check params
+        if notice_id is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        notice_id = int(notice_id)
+        # db
+        with transaction.atomic():
+            notice_query_set = Notice.objects.filter(notice_id=notice_id)
+            if not notice_query_set.exists():
+                return JsonResponse({'status': -1, 'info': '通知不存在'})
+            notice = notice_query_set[0]
+            n_dict = notice.to_dict()
+            n_dict['user_name'] = UserInfo.objects.get(user_id=notice.user_id).name
+            n_dict['block_name'] = Block.objects.get(block_id=notice.block_id).name
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': [n_dict]})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
+
+
 @csrf_exempt
 def notice_query_block(request):
     if request.method != 'GET':
@@ -170,7 +194,7 @@ def notice_publish(request):
                             publish_time=datetime.now(),
                             ddl=datetime.strptime(ddl, '%Y-%m-%d %H:%M:%S'))
             notice.save()
-            return JsonResponse({'status': 0, 'info': '已发布'})
+            return JsonResponse({'status': 0, 'info': '已发布', 'data': {'notice_id': notice.notice_id}})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})

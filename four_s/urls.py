@@ -50,6 +50,7 @@ urlpatterns = [
     # notice
     path('notice/queryRecv/', notice_query_recv, name='notice_query_recv'),
     path('notice/querySend/', notice_query_send, name='notice_query_send'),
+    path('notice/queryById/', notice_query_by_id, name='notice_query_by_id'),
     path('notice/queryBlock/', notice_query_block, name='notice_query_block'),
     path('notice/publish/', notice_publish, name='notice_publish'),
     path('notice/confirm/', notice_confirm, name='notice_confirm'),
