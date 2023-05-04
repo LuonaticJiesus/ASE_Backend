@@ -8,6 +8,11 @@ from django.views.decorators.csrf import csrf_exempt
 from four_s.models import Block, Permission
 
 
+def wrap_block(block_dict):
+    block_id = block_dict['block_id']
+    block_dict['population'] = Permission.objects.filter(block_id=block_id).filter(permission=1).count()    # count students only
+    return block_dict
+
 @csrf_exempt
 def block_query_all(request):
     if request.method != 'GET':
@@ -19,7 +24,7 @@ def block_query_all(request):
             blocks = []
             for block in block_set:
                 b_dict = block.to_dict()
-                blocks.append(b_dict)
+                blocks.append(wrap_block(b_dict))
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': blocks})
     except Exception as e:
         print(e)
@@ -45,7 +50,7 @@ def block_query_permission(request):
             blocks = []
             for p in permission_query_set:
                 block = Block.objects.get(block_id=p.block_id)
-                blocks.append(block.to_dict())
+                blocks.append(wrap_block(block.to_dict()))
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': blocks})
     except Exception as e:
         print(e)
@@ -68,6 +73,7 @@ def block_info(request):
             if not block_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '模块不存在'})
             b_dict = block_query_set[0].to_dict()
+            b_dict = wrap_block(b_dict)
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': b_dict})
     except Exception as e:
         print(e)
@@ -134,7 +140,7 @@ def block_random(request):
             blocks = []
             for b in block_query_set:
                 b_dict = b.to_dict()
-                blocks.append(b_dict)
+                blocks.append(wrap_block(b_dict))
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': blocks})
     except Exception as e:
         print(e)
