@@ -63,6 +63,28 @@ def post_query_title(request):
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
 
 
+def post_query_by_id(request):
+    if request.method != 'GET':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        user_id = int(request.META.get('HTTP_USERID'))
+        post_id = request.GET.get('post_id')
+        # check params
+        if post_id is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        post_id = str(post_id)
+        # db
+        with transaction.atomic():
+            post_query_set = Post.objects.filter(post_id=post_id)
+            if not post_query_set.exists():
+                return JsonResponse({'status': -1, 'info': '帖子不存在'})
+            post = wrap_posts(post_query_set[0], user_id)
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': post})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
+
+
 @csrf_exempt
 def post_query_block(request):
     if request.method != 'GET':
@@ -162,7 +184,7 @@ def post_publish(request):
                 return JsonResponse({'status': -1, 'info': '权限不足'})
             post = Post(title=title, user_id=user_id, txt=txt, block_id=block_id, time=datetime.now())
             post.save()
-            return JsonResponse({'status': 0, 'info': '已发布'})
+            return JsonResponse({'status': 0, 'info': '已发布', 'data': {'post_id': post.post_id}})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，发布失败'})

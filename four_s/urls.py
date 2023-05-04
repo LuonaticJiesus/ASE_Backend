@@ -32,6 +32,7 @@ urlpatterns = [
 
     # post
     path('post/queryTitle/', post_query_title, name='post_query_title'),
+    path('post/queryByID/', post_query_by_id, name='post_query_by_id'),
     path('post/queryBlock/', post_query_block, name='post_query_block'),
     path('post/queryUser/', post_query_user, name='post_query_user'),
     path('post/queryChosen/', post_query_chosen, name='post_query_chosen'),
