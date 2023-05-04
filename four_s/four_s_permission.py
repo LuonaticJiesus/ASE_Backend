@@ -30,6 +30,7 @@ def permission_query_user(request):
             users = []
             for p in perm_query_set:
                 user_dict = UserInfo.objects.get(user_id=p.user_id).to_dict()
+                user_dict['permission'] = Permission.objects.get(block_id=p.block_id, user_id=p.user_id).permission
                 users.append(user_dict)
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': users})
     except Exception as e:
