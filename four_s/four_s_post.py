@@ -10,11 +10,12 @@ from four_s.models import Block, Permission, Post, UserInfo, PostLike, Comment, 
 
 def wrap_post(p, user_id):
     p_dict = p.to_dict()
-    p_dict['user_name'] = UserInfo.objects.get(user_id=p.user_id)
-    p_dict['block_name'] = Block.objects.get(block_id=p.block_id)
+    p_dict['user_name'] = UserInfo.objects.get(user_id=p.user_id).name
+    p_dict['block_name'] = Block.objects.get(block_id=p.block_id).name
     p_dict['like_cnt'] = PostLike.objects.filter(post_id=p.post_id).count()
     p_dict['comment_cnt'] = Comment.objects.filter(post_id=p.post_id).count()
     p_dict['like_state'] = 1 if PostLike.objects.filter(user_id=user_id).filter(post_id=p.post_id).exists() else 0
+    p_dict['permission'] = Permission.objects.get(block_id=p.block_id, user_id=p.user_id).permission
     comment_query_set = Comment.objects.filter(post_id=p.post_id).order_by('-time')
     if comment_query_set is None:
         p_dict['latest_update_user'] = p_dict['user_name']
