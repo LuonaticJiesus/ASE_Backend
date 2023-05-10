@@ -116,7 +116,8 @@ def user_signup(request):
             email_body = ''
             if send_type == 'register':
                 email_title = '注册激活链接'
-                email_body = '请点击下方的链接激活你的账号：http://' + SERVER_IP + ':' + SERVER_PORT + '/four_s/user/active/?active_code={}'.format(code)
+                email_body = '请点击下方的链接激活你的账号：http://' + SERVER_IP + ':' + SERVER_PORT + '/four_s/user/active/?active_code={}'.format(
+                    code)
             else:
                 pass  # 忘记密码--暂时不写
             send_status = send_mail(email_title, email_body, EMAIL_HOST_USER, [email])
@@ -292,12 +293,14 @@ def user_change_pwd(request):
         # db
         with transaction.atomic():
             user_id = int(user_id)
-            user = UserInfo.objects.filter(user_id=user_id)
-            if not user.exists():
+            user_filter = UserInfo.objects.filter(user_id=user_id)
+            if not user_filter.exists():
                 return JsonResponse({'status': -1, 'info': '用户不存在'})
+            user = user_filter[0]
             if not check_password(old_password, user.password):
                 return JsonResponse({'status': -1, 'info': '旧密码错误'})
-            user.update(password=make_password(password))
+            user.password = make_password(password)
+            user.save()
             return JsonResponse({'status': 0, 'info': '已修改'})
     except Exception as e:
         print(e)
