@@ -5,7 +5,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from four_s.models import Notice, UserInfo, Block, NoticeConfirm, Permission, BlockSubscribe
+from four_s.models import Notice, UserInfo, Block, NoticeConfirm, Permission
 
 
 def check_title(title: str):
@@ -42,7 +42,7 @@ def notice_query_recv(request):
             return JsonResponse({'status': -1, 'info': '参数错误'})
         # db
         with transaction.atomic():
-            subscribe_query_set = BlockSubscribe.objects.filter(user_id=user_id)
+            subscribe_query_set = Permission.objects.filter(user_id=user_id)
             notice_id_set = set()
             now_time = datetime.now()
             for sub in subscribe_query_set:
@@ -223,7 +223,7 @@ def notice_confirm(request):
                 return JsonResponse({'status': -1, 'info': '通知不存在'})
             notice = notice_query_set[0]
             block_id = notice.block_id
-            if not BlockSubscribe.objects.filter(block_id=block_id).filter(user_id=user_id).exists():
+            if not Permission.objects.filter(block_id=block_id).filter(user_id=user_id).exists():
                 return JsonResponse({'status': 0, 'info': '未订阅模块'})
             if confirm == 0:
                 NoticeConfirm.objects.filter(notice_id=notice_id).filter(user_id=user_id).delete()
