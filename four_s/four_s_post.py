@@ -83,8 +83,8 @@ def post_query_by_id(request):
             post_query_set = Post.objects.filter(post_id=post_id)
             if not post_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '帖子不存在'})
-            post = wrap_post(post_query_set, user_id)
-            return JsonResponse({'status': 0, 'info': '查询成功', 'data': post})
+            posts = wrap_posts(post_query_set, user_id)
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
