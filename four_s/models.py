@@ -85,10 +85,10 @@ class Block(models.Model):
         }
         return ret
 
-
-class BlockSubscribe(models.Model):
-    block_id = models.IntegerField()
-    user_id = models.IntegerField()
+# 
+# class BlockSubscribe(models.Model):
+#     block_id = models.IntegerField()
+#     user_id = models.IntegerField()
 
 
 class Comment(models.Model):
