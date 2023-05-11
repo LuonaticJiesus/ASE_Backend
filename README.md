@@ -176,17 +176,25 @@
 | block_id   | IntegerField |      | 用户订阅的模块id   |
 | permission | IntegerField |      | 用户对该模块的权限 |
 
+| 权限值permission | 意义              | 赋予的对应block下的操作权限                                  |
+| ---------------- | ----------------- | ------------------------------------------------------------ |
+| 0                | 订阅该block的路人 | - 查询所有信息<br />- 所有通知的接收、查看和确认<br />- 点赞帖子/评论（==maybe==） |
+| 1                | 该block下的成员   | - 查询所有信息<br />- 通知的接收、查看和确认<br />- 发布帖子，发布评论<br />- 删除自己的帖子或评论 |
+| 2                | 助教等            | - 查询所有信息<br />- **通知的发布、查看和修改**<br />- 发布帖子，发布评论<br />- 删除任何帖子或评论<br />- **加精帖子** |
+| 3                | 管理者            |                                                              |
+| 4                | 超级管理员        |                                                              |
+
 
 
 ### Contribution
 
 主键：user_id, block_id
 
-| 属性名       | 类型         | 限制 | 说明 |
-| ------------ | ------------ | ---- | ---- |
-| user_id      | IntegerField |      |      |
-| block_id     | IntegerField |      |      |
-| contribution | IntegerField |      |      |
+| 属性名       | 类型         | 限制 | 说明         |
+| ------------ | ------------ | ---- | ------------ |
+| user_id      | IntegerField |      |              |
+| block_id     | IntegerField |      |              |
+| contribution | IntegerField |      | 成员的贡献分 |
 
 
 
@@ -245,14 +253,15 @@
 
 ### `four_s_notice.py`
 
-| 函数名             | 传入参数                                                     | 返回值 | 功能（考虑贡献值）                                           | 前置条件（权限等）                      | 异常处理                                                     | 接口路由             | 请求类型 |
-| ------------------ | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ | --------------------------------------- | ------------------------------------------------------------ | -------------------- | -------- |
-| notice_query_recv  | **user_id**<br />**show_confirm**(<br />0:未"确认收到"的通知;<br />1:所有通知)<br />**undue_op**(<br />0:所有通知; <br />1:未截止通知; <br />-1:已截止通知) |        | 查询收到的(所有；未截止；已截止）(所有; 未确认)的通知信息<br /> |                                         | show_confirm与undue_op参数范围错误                           | `notice/queryRecv/`  | GET      |
-| notice_query_send  | user_id                                                      |        | 查询用户发送的所有通知，按时间排序                           |                                         | 用户不存在                                                   | `notice/querySend/`  | GET      |
-| notice_query_block | block_id                                                     |        | 查询block下的所有通知，按时间排序                            |                                         | block不存在                                                  | `notice/queryBlock/` | GET      |
-| notice_publish     | user_id(request.META自带)<br />title<br />txt<br />block_id<br />ddl |        | 发布通知                                                     | 用户权限>=2                             | 标题格式错误<br />内容格式错误<br />截止日期格式错误<br />权限不够 | `notice/publish/`    | POST     |
-| notice_confirm     | user_id(request.META自带)<br />notice_id<br />confirm        |        | 确认收到的通知                                               |                                         |                                                              | notice/confirm/      | POST     |
-| notice_delete      | user_id(request.META自带)<br />notice_id                     |        | 删除通知                                                     | 用户权限perm>=2且删除的是自己发布的通知 | 权限不足:不是该用户发布的通知                                | `notice/delete/`     | POST     |
+| 函数名             | 传入参数                                                     | 返回值                | 功能（考虑贡献值）                                           | 前置条件（权限等）                      | 异常处理                                                     | 接口路由             | 请求类型 |
+| ------------------ | ------------------------------------------------------------ | --------------------- | ------------------------------------------------------------ | --------------------------------------- | ------------------------------------------------------------ | -------------------- | -------- |
+| notice_query_recv  | **user_id**<br />**show_confirm**(<br />0:未"确认收到"的通知;<br />1:所有通知)<br />**undue_op**(<br />0:所有通知; <br />1:未截止通知; <br />-1:已截止通知) |                       | 查询收到的(所有；未截止；已截止）(所有; 未确认)的通知信息<br /> |                                         | show_confirm与undue_op参数范围错误                           | `notice/queryRecv/`  | GET      |
+| notice_query_send  | user_id                                                      |                       | 查询用户发送的所有通知，按时间排序                           |                                         | 用户不存在                                                   | `notice/querySend/`  | GET      |
+| notice_query_by_id | notice_id                                                    |                       | 查询notice_id的通知                                          |                                         |                                                              | `notice/queryById/`  | GET      |
+| notice_query_block | block_id                                                     |                       | 查询block下的所有通知，按时间排序                            |                                         | block不存在                                                  | `notice/queryBlock/` | GET      |
+| notice_publish     | user_id(request.META自带)<br />title<br />txt<br />block_id<br />ddl | 发布的通知的notice_id | 发布通知                                                     | 用户权限>=2                             | 标题格式错误<br />内容格式错误<br />截止日期格式错误<br />权限不够 | `notice/publish/`    | POST     |
+| notice_confirm     | user_id(request.META自带)<br />notice_id<br />confirm        |                       | 确认收到的通知                                               |                                         |                                                              | `notice/confirm/`    | POST     |
+| notice_delete      | user_id(request.META自带)<br />notice_id                     |                       | 删除通知                                                     | 用户权限perm>=2且删除的是自己发布的通知 | 权限不足:不是该用户发布的通知                                | `notice/delete/`     | POST     |
 
 
 
@@ -270,17 +279,18 @@
 
 ==帖子加精的问题：可以直接在Post里面加一个属性isChosen，加精为1，非加精为0==
 
-| 函数名            | 传入参数                                                     | 返回值           | 功能（考虑贡献值）                             | 前置条件（权限等）                               | 异常处理                    | 接口路由           | 请求类型 |
-| ----------------- | ------------------------------------------------------------ | ---------------- | ---------------------------------------------- | ------------------------------------------------ | --------------------------- | ------------------ | -------- |
-| wrap_post         | 一条post数据项<br />user_id                                  | 包装后的post信息 |                                                |                                                  |                             |                    |          |
-| post_query_title  | user_id(request.META自带)<br />title                         |                  | 根据title查找post                              |                                                  |                             | `post/queryTitle/` | GET      |
-| post_query_block  | user_id(request.META自带)<br />block_id                      |                  | 查询block下发布的所有帖子                      |                                                  |                             | `post/queryBlock/` | GET      |
-| post_query_user   | userid(request.META自带)<br />user_id                        |                  | 查询user_id发布的帖子                          |                                                  |                             | post/queryUser/    | GET      |
-| post_query_chosen | user_id(request.META自带)<br />block_id                      |                  | 查询block下的加精帖子                          |                                                  |                             | post/queryChosen/  | GET      |
-| post_publish      | user_id(request.META自带)<br />title<br />txt<br />block_id  |                  | 发布帖子                                       | 用户在当前block下的权限>=1<br />                 | 权限不足<br />==point不足== | `post/queryUser/`  | POST     |
-| post_delete       | user_id(request.META自带)<br />post_id                       |                  | 删除帖子，级联删除评论、加精、收藏、点赞的信息 | - 删除自己发布的帖子<br />- 删除他人帖子:perm>=2 | 权限不足                    | `post/publish/`    | POST     |
-| post_like         | user_id(request.META自带)<br />post_id<br />like(0:取消点赞,1:点赞) |                  | 点赞或取消点赞帖子                             | 用户在帖子所在的block下的perm>=1                 | 权限错误                    | `post/delete/`     | POST     |
-| post_choose       | user_id(request.META自带)<br />post_id<br />chosen(0:取消加精,非0:加精) |                  | 加精或取消加精帖子                             | 用户在帖子所在的block下的perm>=2                 |                             | `post/like/`       |          |
+| 函数名            | 传入参数                                                     | 返回值              | 功能（考虑贡献值）                             | 前置条件（权限等）                               | 异常处理                    | 接口路由           | 请求类型 |
+| ----------------- | ------------------------------------------------------------ | ------------------- | ---------------------------------------------- | ------------------------------------------------ | --------------------------- | ------------------ | -------- |
+| wrap_post         | 一条post数据项<br />user_id                                  | 包装后的post信息    |                                                |                                                  |                             |                    |          |
+| post_query_title  | user_id(request.META自带)<br />title                         |                     | 根据title查找post                              |                                                  |                             | `post/queryTitle/` | GET      |
+| post_query_by_id  | user_id(request.META自带)<br />post_id                       |                     | 根据post_id查找post                            |                                                  |                             | `post/queryByID/`  | GET      |
+| post_query_block  | user_id(request.META自带)<br />block_id                      |                     | 查询block下发布的所有帖子                      |                                                  |                             | `post/queryBlock/` | GET      |
+| post_query_user   | userid(request.META自带)<br />user_id                        |                     | 查询user_id发布的帖子                          |                                                  |                             | post/queryUser/    | GET      |
+| post_query_chosen | user_id(request.META自带)<br />block_id                      |                     | 查询block下的加精帖子                          |                                                  |                             | post/queryChosen/  | GET      |
+| post_publish      | user_id(request.META自带)<br />title<br />txt<br />block_id  | 发布的post的post_id | 发布帖子                                       | 用户在当前block下的权限>=1<br />                 | 权限不足<br />==point不足== | `post/queryUser/`  | POST     |
+| post_delete       | user_id(request.META自带)<br />post_id                       |                     | 删除帖子，级联删除评论、加精、收藏、点赞的信息 | - 删除自己发布的帖子<br />- 删除他人帖子:perm>=2 | 权限不足                    | `post/publish/`    | POST     |
+| post_like         | user_id(request.META自带)<br />post_id<br />like(0:取消点赞,1:点赞) |                     | 点赞或取消点赞帖子                             | 用户在帖子所在的block下的perm>=1                 | 权限错误                    | `post/delete/`     | POST     |
+| post_choose       | user_id(request.META自带)<br />post_id<br />chosen(0:取消加精,非0:加精) |                     | 加精或取消加精帖子                             | 用户在帖子所在的block下的perm>=2                 |                             | `post/like/`       |          |
 
 
 
