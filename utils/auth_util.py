@@ -92,7 +92,7 @@ class AuthorizeMiddleware(MiddlewareMixin):
             if user_id is None or token is None:
                 return JsonResponse({'status': -100, 'info': '请登录'})
             if not check_token(user_id, token):
-                return JsonResponse({'status': -100, 'info': '请重新登录'})
+                return JsonResponse({'status': -100, 'info': '请刷新页面，重新登录'})
 
         except Exception as e:
             print(e)
