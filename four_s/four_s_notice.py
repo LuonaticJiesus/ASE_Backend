@@ -191,7 +191,7 @@ def notice_publish(request):
                     permission__gte=2).exists():
                 return JsonResponse({'status': -1, 'info': '缺少权限'})
             notice = Notice(title=title, txt=txt, user_id=user_id, block_id=block_id,
-                            publish_time=datetime.now(),
+                            time=datetime.now(),    # publish_time
                             ddl=datetime.strptime(ddl, '%Y-%m-%d %H:%M:%S'))
             notice.save()
             return JsonResponse({'status': 0, 'info': '已发布', 'data': {'notice_id': notice.notice_id}})
