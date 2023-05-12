@@ -53,8 +53,8 @@ def notice_query_recv(request):
                     block_notice_queryset = Notice.objects.filter(block_id=bid).filter(ddl__gt=now_time)
                 else:
                     block_notice_queryset = Notice.objects.filter(block_id=bid).filter(ddl__lte=now_time)
-                for nid in block_notice_queryset:
-                    notice_id_set.add(nid)
+                for notice in block_notice_queryset:
+                    notice_id_set.add(notice.notice_id)
             if show_confirm == 0:
                 for notice in NoticeConfirm.objects.filter(user_id=user_id):
                     notice_id_set.remove(notice.notice_id)
