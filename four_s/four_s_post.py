@@ -118,10 +118,11 @@ def post_query_user_block(request):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
+        userid = int(request.META.get('HTTP_USERID'))
         user_id = request.GET.get('user_id')
         block_id = request.GET.get('block_id')
         # check params
-        if block_id is None or block_id is None:
+        if block_id is None or user_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         user_id = int(user_id)
         block_id = int(block_id)
@@ -129,8 +130,8 @@ def post_query_user_block(request):
         with transaction.atomic():
             if not Block.objects.filter(block_id=block_id).exists():
                 return JsonResponse({'status': -1, 'info': '模块不存在'})
-            post_query_set = Post.objects.filter(block_id=block_id).order_by('-time')
-            posts = wrap_posts(post_query_set, user_id)
+            post_query_set = Post.objects.filter(block_id=block_id).filter(user_id=user_id).order_by('-time')
+            posts = wrap_posts(post_query_set, userid)
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
     except Exception as e:
         print(e)
