@@ -11,9 +11,7 @@ from BackEnd import global_config
 HEADER = {'typ': 'JWP', 'alg': 'default'}
 KEY = global_config['token']['key']
 SALT = global_config['token']['salt']
-print('token:')
-print(KEY)
-print(SALT)
+
 
 def encrypt(obj):
     """加密：signing 加密 and Base64 编码"""
