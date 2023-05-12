@@ -35,6 +35,7 @@ urlpatterns = [
     path('post/queryByID/', post_query_by_id, name='post_query_by_id'),
     path('post/queryBlock/', post_query_block, name='post_query_block'),
     path('post/queryUser/', post_query_user, name='post_query_user'),
+    path('post/queryUserBlock/', post_query_user_block, name='post_query_user_block'),
     path('post/queryChosen/', post_query_chosen, name='post_query_chosen'),
     path('post/publish/', post_publish, name='post_publish'),
     path('post/delete/', post_delete, name='post_delete'),
