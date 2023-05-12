@@ -6,10 +6,14 @@ import hashlib
 from django.http import JsonResponse
 from django.urls import re_path
 
-HEADER = {'typ': 'JWP', 'alg': 'default'}
-KEY = 'four_s'
-SALT = 'Luonatic_Jiesus'
+from BackEnd import global_config
 
+HEADER = {'typ': 'JWP', 'alg': 'default'}
+KEY = global_config['token']['key']
+SALT = global_config['token']['salt']
+print('token:')
+print(KEY)
+print(SALT)
 
 def encrypt(obj):
     """加密：signing 加密 and Base64 编码"""
@@ -96,4 +100,4 @@ class AuthorizeMiddleware(MiddlewareMixin):
 
         except Exception as e:
             print(e)
-            return JsonResponse({'status': -1, 'info': '服务器错误，注册失败'})
+            return JsonResponse({'status': -1, 'info': '服务器错误，请刷新页面，重新登录'})
