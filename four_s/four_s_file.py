@@ -13,7 +13,7 @@ tencent_cos_secret_key = global_config['tencent_cos']['secret_key']
 tencent_cos_region = global_config['tencent_cos']['region']
 tencent_cos_bucket = global_config['tencent_cos']['bucket']
 tencent_cos_config = CosConfig(Region=tencent_cos_region, SecretId=tencent_cos_secret_id,
-                               SecretKey=tencent_cos_secret_key, Timeout=1)
+                               SecretKey=tencent_cos_secret_key, Timeout=5)
 tencent_cos_client = CosS3Client(tencent_cos_config, retry=0)
 
 chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
