@@ -27,9 +27,11 @@ urlpatterns = [
     path('block/queryAll/', block_query_all, name='block_query_all'),
     path('block/queryPermission/', block_query_permission, name='block_query_permission'),
     path('block/searchAll/', block_search_all, name='block_search_all'),
+    path('block/searchMy/', block_search_my, name='block_search_my'),
     path('block/subscribe/', block_subscribe, name='block_subscribe'),
     path('block/info/', block_info, name='block_info'),
     path('block/random/', block_random, name='block_random'),
+    path('block/modify/', block_modify, name='block_modify'),
 
     # post
     path('post/queryTitle/', post_query_title, name='post_query_title'),

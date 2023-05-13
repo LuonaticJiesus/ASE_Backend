@@ -8,6 +8,22 @@ from django.views.decorators.csrf import csrf_exempt
 from four_s.models import Block, Permission
 
 
+def check_name(name: str):
+    return 0 < len(name) < 200
+
+
+def check_avatar(avatar: str):
+    return 0 < len(avatar) < 200
+
+
+def check_info(info: str):
+    return 0 < len(info) < 200
+
+
+def check_approve_permission(perm: int):
+    return 0 <= perm <= 4
+
+
 def wrap_block(block_dict):
     block_id = block_dict['block_id']
     block_dict['population'] = Permission.objects.filter(block_id=block_id).filter(
@@ -91,7 +107,9 @@ def block_search_all(request):
         # check params
         if keyword is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
-        keyword = str(keyword)
+        keyword = str(keyword).strip('\t').strip(' ')
+        if len(keyword) < 0:
+            return JsonResponse({'status': -1, 'info': '参数不合法'})
         # db
         with transaction.atomic():
             block_query_set = Block.objects.filter(name__contains=keyword, info__contains=keyword)
@@ -99,6 +117,39 @@ def block_search_all(request):
             for block in block_query_set:
                 b_dict = block.to_dict()
                 blocks.append(wrap_block(b_dict))
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': blocks})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
+
+
+@csrf_exempt
+def block_search_my(request):
+    if request.method != 'GET':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        user_id = int(request.META.get('HTTP_USERID'))
+        keyword = request.GET.get('keyword')
+        # check params
+        if keyword is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        keyword = str(keyword).strip('\t').strip(' ')
+        if len(keyword) < 0:
+            return JsonResponse({'status': -1, 'info': '参数不合法'})
+        # db
+        with transaction.atomic():
+            block_id_set = set()
+            for b in Permission.objects.filter(user_id=user_id):
+                block_id_set.add(b.block_id)
+            blocks = []
+            for bid in block_id_set:
+                block_query_set = Block.objects.filter(block_id=bid)\
+                    .filter(name__contains=keyword, info__contains=keyword)
+                if not block_query_set.exists():
+                    continue
+                block = block_query_set[0]
+                b_dict = block.to_dict()
+                blocks.append(b_dict)
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': blocks})
     except Exception as e:
         print(e)
@@ -169,3 +220,56 @@ def block_random(request):
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
+
+
+@csrf_exempt
+def block_modify(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        user_id = int(request.META.get('HTTP_USERID'))
+        data = json.loads(request.body)
+        block_id = data.get('block_id')
+        name = data.get('block_id')
+        avatar = data.get('avatar')
+        info = data.get('info')
+        approve_permission = data.get('approve_permission')
+        # check params
+        if block_id is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        block_id = int(block_id)
+        if name is not None:
+            name = str(name).strip('\t').strip(' ')
+            if not check_name(name):
+                return JsonResponse({'status': -1, 'info': '名字不合法'})
+        if avatar is not None:
+            avatar = str(avatar)
+            if not check_avatar(avatar):
+                return JsonResponse({'status': -1, 'info': '头像不合法'})
+        if info is not None:
+            info = str(info).strip('\t').strip(' ')
+            if not check_info(info):
+                return JsonResponse({'status': -1, 'info': '简介不合法'})
+        if approve_permission is not None:
+            approve_permission = int(approve_permission)
+            if not check_approve_permission(approve_permission):
+                return JsonResponse({'status': -1, 'info': '权限不合法'})
+        # db
+        with transaction.atomic():
+            block = Block.objects.filter(block_id=block_id)
+            if not block.exists():
+                return JsonResponse({'status': -1, 'info': '模块不存在'})
+            if not Permission.objects.filter(block_id=block_id).filter(user_id=user_id).filter(permission=4).exists():
+                return JsonResponse({'status': -1, 'info': '权限不足'})
+            if name is not None:
+                block.update(name=name)
+            if avatar is not None:
+                block.update(avatar=avatar)
+            if info is not None:
+                block.update(info=info)
+            if approve_permission is not None:
+                block.update(approve_permission=approve_permission)
+            return JsonResponse({'status': 0, 'info': '已修改'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误，修改失败'})
