@@ -186,6 +186,30 @@ def post_query_chosen(request):
 
 
 @csrf_exempt
+def post_detail(request):
+    if request.method != 'GET':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        user_id = int(request.META.get('HTTP_USERID'))
+        post_id = request.GET.get('block_id')
+        # check params
+        if post_id is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        post_id = int(post_id)
+        # db
+        with transaction.atomic():
+            post_query_set = Post.objects.filter(post_id=post_id)
+            if not post_query_set.exists():
+                return JsonResponse({'status': -1, 'info': '帖子不存在'})
+            post = post_query_set[0]
+            p_dict = wrap_post(post, user_id)
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': p_dict})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误, 查询失败'})
+
+
+@csrf_exempt
 def post_publish(request):
     if request.method != 'POST':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})

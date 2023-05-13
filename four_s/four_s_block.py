@@ -83,6 +83,29 @@ def block_info(request):
 
 
 @csrf_exempt
+def block_search_all(request):
+    if request.method != 'GET':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        keyword = request.GET.get('keyword')
+        # check params
+        if keyword is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        keyword = str(keyword)
+        # db
+        with transaction.atomic():
+            block_query_set = Block.objects.filter(name__contains=keyword, info__contains=keyword)
+            blocks = []
+            for block in block_query_set:
+                b_dict = block.to_dict()
+                blocks.append(wrap_block(b_dict))
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': blocks})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
+
+
+@csrf_exempt
 def block_subscribe(request):
     if request.method != 'POST':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})

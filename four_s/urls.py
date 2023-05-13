@@ -26,6 +26,7 @@ urlpatterns = [
     # block
     path('block/queryAll/', block_query_all, name='block_query_all'),
     path('block/queryPermission/', block_query_permission, name='block_query_permission'),
+    path('block/searchAll/', block_search_all, name='block_search_all'),
     path('block/subscribe/', block_subscribe, name='block_subscribe'),
     path('block/info/', block_info, name='block_info'),
     path('block/random/', block_random, name='block_random'),
@@ -37,6 +38,7 @@ urlpatterns = [
     path('post/queryUser/', post_query_user, name='post_query_user'),
     path('post/queryUserBlock/', post_query_user_block, name='post_query_user_block'),
     path('post/queryChosen/', post_query_chosen, name='post_query_chosen'),
+    path('post/detail/', post_detail, name='post_detail'),
     path('post/publish/', post_publish, name='post_publish'),
     path('post/delete/', post_delete, name='post_delete'),
     path('post/like/', post_like, name='post_like'),
