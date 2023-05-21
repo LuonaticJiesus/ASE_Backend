@@ -78,7 +78,7 @@ def permission_set(request):
         user_id = int(user_id)
         block_id = int(block_id)
         permission = int(permission)
-        if permission > 4:
+        if permission not in [0, 1, 2, 3, 4]:
             return JsonResponse({'status': -1, 'info': '权限错误'})
         # db
         with transaction.atomic():
