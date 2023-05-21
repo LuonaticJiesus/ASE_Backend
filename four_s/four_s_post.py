@@ -275,6 +275,7 @@ def post_delete(request):
             PostFavor.objects.filter(post_id=post_id).delete()
             PostLike.objects.filter(post_id=post_id).delete()
             Post.objects.filter(post_id=post_id).delete()
+            return JsonResponse({'status': 0, 'info': '已删除'})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，删除失败'})
