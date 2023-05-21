@@ -10,10 +10,13 @@ from four_s.models import Post, Permission, Comment, CommentLike, UserInfo, Mess
 
 def wrap_comment(comm_dict, user_id):
     comm_id = comm_dict['comment_id']
+    user = UserInfo.objects.get(user_id=comm_dict['user_id'])
     comm_dict['like_cnt'] = CommentLike.objects.filter(comment_id=comm_id).count()
-    comm_dict['user_name'] = UserInfo.objects.get(user_id=comm_dict['user_id']).name
+    comm_dict['user_name'] = user.name
     comm_dict['like_state'] = 1 if CommentLike.objects.filter(user_id=user_id).filter(
         comment_id=comm_id).exists() else 0
+    if user.avatar is not None:
+        comm_dict['user_avatar'] = user.avatar
 
 
 def check_txt(txt: str):
@@ -112,7 +115,7 @@ def comment_publish(request):
             message = Message(sender_id=user_id,
                               receiver_id=post.user_id,
                               content=content,
-                              source_type=1,            # 帖子
+                              source_type=1,  # 帖子
                               source_id=post_id,
                               time=datetime.now(),
                               status=0)
@@ -123,7 +126,7 @@ def comment_publish(request):
                 message = Message(sender_id=user_id,
                                   receiver_id=receiver_id,
                                   content=content,
-                                  source_type=1,        # 帖子
+                                  source_type=1,  # 帖子
                                   source_id=post_id,
                                   time=datetime.now(),
                                   status=0)
