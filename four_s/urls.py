@@ -32,6 +32,7 @@ urlpatterns = [
     path('block/info/', block_info, name='block_info'),
     path('block/random/', block_random, name='block_random'),
     path('block/modify/', block_modify, name='block_modify'),
+    path('block/delete/', block_delete, name='block_delete'),
 
     # post
     path('post/queryTitle/', post_query_title, name='post_query_title'),

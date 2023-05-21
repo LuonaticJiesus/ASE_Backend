@@ -5,7 +5,8 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from four_s.models import Block, Permission
+from four_s.models import Block, Permission, Post, Comment, CommentLike, PostFavor, PostChosen, PostLike, Notice, \
+    Contribution
 
 
 def check_name(name: str):
@@ -160,7 +161,7 @@ def block_search_my(request):
                 block_id_set.add(b.block_id)
             blocks = []
             for bid in block_id_set:
-                block_query_set = Block.objects.filter(block_id=bid)\
+                block_query_set = Block.objects.filter(block_id=bid) \
                     .filter(name__contains=keyword, info__contains=keyword)
                 if not block_query_set.exists():
                     continue
@@ -287,6 +288,54 @@ def block_modify(request):
             if approve_permission is not None:
                 block.update(approve_permission=approve_permission)
             return JsonResponse({'status': 0, 'info': '已修改'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误，修改失败'})
+
+
+@csrf_exempt
+def block_delete(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        user_id = int(request.META.get('HTTP_USERID'))
+        data = json.loads(request.body)
+        block_id = data.get('block_id')
+        # check params
+        if block_id is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        block_id = int(block_id)
+        # db
+        with transaction.atomic():
+            block = Block.objects.filter(block_id=block_id)
+            if not block.exists():
+                return JsonResponse({'status': -1, 'info': '模块不存在'})
+            if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(permission=4).exists():
+                return JsonResponse({'status': -1, 'info': '权限不足'})
+            post_ids = set()
+            comment_ids = set()
+            post_query_set = Post.objects.filter(block_id=block_id)
+            for p in post_query_set:
+                post_ids.add(p.post_id)
+                comm_query_set = Comment.objects.filter(post_id=p.post_id)
+                for c in comm_query_set:
+                    comment_ids.add(c.comment_id)
+            # del comment
+            for comm_id in comment_ids:
+                CommentLike.objects.filter(comment_id=comm_id).delete()
+                Comment.objects.filter(comment_id=comm_id).delete()
+            # del post
+            for post_id in post_ids:
+                PostFavor.objects.filter(post_id=post_id).delete()
+                PostChosen.objects.filter(post_id=post_id).delete()
+                PostLike.objects.filter(post_id=post_id).delete()
+                Post.objects.filter(post_id=post_id).delete()
+            # del block
+            Permission.objects.filter(block_id=block_id).delete()
+            Notice.objects.filter(block_id=block_id).delete()
+            Contribution.objects.filter(block_id=block_id).delete()
+            Block.objects.filter(block_id=block_id).delete()
+            return JsonResponse({'status': 0, 'info': '已删除'})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，修改失败'})
