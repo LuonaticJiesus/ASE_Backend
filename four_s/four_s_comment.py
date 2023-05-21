@@ -42,10 +42,12 @@ def comment_queryPost(request):
             first_comments = {}
             second_comments = {}
             for c in comment_query_set:
-                if c.parent_id is not None:
+                # first_class
+                if c.parent_id is None:
                     c_dict = c.to_dict()
                     first_comments[c.comment_id] = c_dict
                     c_dict['subs'] = []
+                # second_class
                 else:
                     second_comments[c.comment_id] = c.to_dict()
             for cid in second_comments.keys():
@@ -62,6 +64,7 @@ def comment_queryPost(request):
                 c_dict['subs'].sort(key=cmp, reverse=True)
                 for sub_dict in c_dict['subs']:
                     wrap_comment(sub_dict, user_id)
+                comments.append(c_dict)
             comments.sort(key=cmp, reverse=True)
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': comments})
 
