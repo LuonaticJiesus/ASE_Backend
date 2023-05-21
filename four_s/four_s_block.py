@@ -338,4 +338,4 @@ def block_delete(request):
             return JsonResponse({'status': 0, 'info': '已删除'})
     except Exception as e:
         print(e)
-        return JsonResponse({'status': -1, 'info': '操作错误，修改失败'})
+        return JsonResponse({'status': -1, 'info': '操作错误，删除失败'})
