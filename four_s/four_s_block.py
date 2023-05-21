@@ -55,20 +55,38 @@ def block_query_permission(request):
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
         user_id = int(request.META.get('HTTP_USERID'))
-        permission = request.GET.get('permission')
+        permission = request.GET.getlist('permission[]', None)
+        print(permission)
         # check params
         if permission is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
-        permission = int(permission)
-        if permission not in [0, 1, 2, 3, 4]:
-            return JsonResponse({'status': -1, 'info': '参数错误'})
+        perms = set()
+        for perm in permission:
+            perm = int(perm)
+            if not -1 <= perm <= 4:
+                return JsonResponse({'status': -1, 'info': '参数错误'})
+            perms.add(perm)
         # db
         with transaction.atomic():
-            permission_query_set = Permission.objects.filter(user_id=user_id).filter(permission=permission)
             blocks = []
-            for p in permission_query_set:
-                block = Block.objects.get(block_id=p.block_id)
-                blocks.append(wrap_block(block.to_dict()))
+            perm_query_set = Permission.objects.filter(user_id=user_id)
+            sub_block_perm = {}  # 订阅的block，block_id->permission
+            block_ids = set()  # 需要返回的block
+            for p in perm_query_set:
+                sub_block_perm[p.block_id] = p.permission
+            sub_block_ids = sub_block_perm.keys()
+            if -1 in perms:
+                all_blocks = Block.objects.filter()
+                for b in all_blocks:
+                    if b.block_id not in sub_block_ids:
+                        block_ids.add(b.block_id)
+            for block_id in sub_block_ids:
+                permission = sub_block_perm[block_id]
+                if permission in perms:
+                    block_ids.add(block_id)
+            for block_id in block_ids:
+                b_dict = Block.objects.get(block_id=block_id).to_dict()
+                blocks.append(wrap_block(b_dict))
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': blocks})
     except Exception as e:
         print(e)
