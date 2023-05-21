@@ -116,7 +116,7 @@ def user_signup(request):
             email_body = ''
             if send_type == 'register':
                 email_title = '注册激活链接'
-                email_body = '请点击下方的链接激活你的账号：http://' + SERVER_IP + ':' + SERVER_PORT + '/four_s/user/active/?active_code={}'.format(
+                email_body = '请点击下方的链接激活你的账号：http://' + SERVER_IP + ':' + SERVER_PORT + '/?active_code={}'.format(
                     code)
             else:
                 pass  # 忘记密码--暂时不写
