@@ -56,7 +56,6 @@ def block_query_permission(request):
     try:
         user_id = int(request.META.get('HTTP_USERID'))
         permission = request.GET.getlist('permission[]', None)
-        print(permission)
         # check params
         if permission is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
