@@ -43,16 +43,16 @@ def comment_queryPost(request):
             second_comments = {}
             for c in comment_query_set:
                 # first_class
-                if c.parent_id is None:
+                if c.root_comment_id is None:
                     c_dict = c.to_dict()
                     first_comments[c.comment_id] = c_dict
-                    c_dict['subs'] = []
+                    c_dict['sub_comments'] = []
                 # second_class
                 else:
                     second_comments[c.comment_id] = c.to_dict()
             for cid in second_comments.keys():
                 c_second_dict = second_comments[cid]
-                first_comments[c_second_dict['parent_id']]['subs'].append(c_second_dict)
+                first_comments[c_second_dict['root_comment_id']]['sub_comments'].append(c_second_dict)
 
             def cmp(element):
                 return element['time']
@@ -61,8 +61,8 @@ def comment_queryPost(request):
             for cid in first_comments.keys():
                 c_dict = first_comments[cid]
                 wrap_comment(c_dict, user_id)
-                c_dict['subs'].sort(key=cmp, reverse=True)
-                for sub_dict in c_dict['subs']:
+                c_dict['sub_comments'].sort(key=cmp, reverse=True)
+                for sub_dict in c_dict['sub_comments']:
                     wrap_comment(sub_dict, user_id)
                 comments.append(c_dict)
             comments.sort(key=cmp, reverse=True)
@@ -96,7 +96,9 @@ def comment_publish(request):
         with transaction.atomic():
             post_query_set = Post.objects.filter(post_id=post_id)
             if not post_query_set.exists():
-                return JsonResponse({'status': -1, 'info': '约束错误'})
+                return JsonResponse({'status': -1, 'info': '帖子不存在'})
+            root_comment_id = None
+            post = Post.objects.get(post_id=post_id)
             if parent_id is not None:
                 parent_query_set = Comment.objects.filter(comment_id=parent_id)
                 if not parent_query_set.exists():
@@ -104,13 +106,12 @@ def comment_publish(request):
                 parent_comment = parent_query_set[0]
                 if parent_comment.post_id != post_id:
                     return JsonResponse({'status': -1, 'info': '约束错误'})
-                if parent_comment.parent_id is not None:
-                    parent_id = parent_comment.parent_id
-            post = Post.objects.get(post_id=post_id)
+                root_comment_id = parent_comment.root_comment_id
             if not Permission.objects.filter(block_id=post.block_id).filter(user_id=user_id).filter(
                     permission__gte=1).exists():
                 return JsonResponse({'status': -1, 'info': '权限不足'})
-            comment = Comment(user_id=user_id, post_id=post_id, parent_id=parent_id, txt=txt, time=datetime.now())
+            comment = Comment(user_id=user_id, post_id=post_id, parent_id=parent_id, root_comment_id=root_comment_id,
+                              txt=txt, time=datetime.now())
             comment.save()
             # send a message
             user_name = UserInfo.objects.get(user_id=user_id).name
@@ -167,8 +168,29 @@ def comment_delete(request):
                 return JsonResponse({'status': -1, 'info': '权限不足'})
             # delete
             if comment.parent_id is None:
-                Comment.objects.filter(parent_id=comment.comment_id).delete()
-            comment.delete()
+                Comment.objects.filter(root_comment_id=comment.comment_id).delete()
+                Comment.objects.filter(comment_id=comment.comment_id).delete()
+            else:
+                # 并查集
+                comm_parents = []
+                comm_query_set = Comment.objects.filter(root_comment_id=comment.root_comment_id)
+                for c in comm_query_set:
+                    if c.comment_id != comment.comment_id:
+                        comm_parents.append([c.comment_id, c.parent_id])
+                    else:
+                        comm_parents.append([c.comment_id, None])
+
+                def query_parent(parents: list, idx: int):
+                    if parents[idx][1] is not None:
+                        parents[idx][1] = query_parent(parents, parents[idx][1])
+                    return parents[idx][1]
+
+                for i in range(len(comm_parents)):
+                    query_parent(comm_parents, i)
+                for i in range(len(comm_parents)):
+                    if comm_parents[i][1] == comment.comment_id:
+                        Comment.objects.filter(comment_id=comm_parents[i][0]).delete()
+                Comment.objects.filter(comment_id=comment_id).delete()
             return JsonResponse({'status': 0, 'info': '已删除'})
     except Exception as e:
         print(e)

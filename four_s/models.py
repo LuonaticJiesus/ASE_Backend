@@ -85,17 +85,13 @@ class Block(models.Model):
         }
         return ret
 
-# 
-# class BlockSubscribe(models.Model):
-#     block_id = models.IntegerField()
-#     user_id = models.IntegerField()
-
 
 class Comment(models.Model):
     comment_id = models.AutoField(primary_key=True)
     user_id = models.IntegerField()
     post_id = models.IntegerField()
-    parent_id = models.IntegerField(null=True)
+    parent_id = models.IntegerField(null=True)  # null: to post, else to comment
+    root_comment_id = models.IntegerField(null=True)  # null: to post, else: the first comment
     txt = models.TextField()
     time = models.DateTimeField()
 
