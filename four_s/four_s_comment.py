@@ -36,7 +36,7 @@ def comment_queryPost(request):
         post_id = int(post_id)
         # db
         with transaction.atomic():
-            if Post.objects.filter(post_id=post_id).exists():
+            if not Post.objects.filter(post_id=post_id).exists():
                 return JsonResponse({'status': -1, 'info': '帖子不存在'})
             comment_query_set = Comment.objects.filter(post_id=post_id)
             first_comments = {}
@@ -131,7 +131,7 @@ def comment_publish(request):
                                   time=datetime.now(),
                                   status=0)
                 message.save()
-            return JsonResponse({'status': -0, 'info': '已发布'})
+            return JsonResponse({'status': 0, 'info': '已发布'})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，发布失败'})
