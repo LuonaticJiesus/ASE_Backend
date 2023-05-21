@@ -2,6 +2,7 @@ import json
 import random
 
 from django.db import transaction
+from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -130,7 +131,7 @@ def block_search_all(request):
             return JsonResponse({'status': -1, 'info': '参数不合法'})
         # db
         with transaction.atomic():
-            block_query_set = Block.objects.filter(name__contains=keyword, info__contains=keyword)
+            block_query_set = Block.objects.filter(Q(name__icontains=keyword) | Q(info__icontains=keyword))
             blocks = []
             for block in block_query_set:
                 b_dict = block.to_dict()
