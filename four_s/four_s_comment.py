@@ -183,25 +183,23 @@ def comment_like(request):
         user_id = int(request.META.get('HTTP_USERID'))
         data = json.loads(request.body)
         comment_id = data.get('comment_id')
-        like = data.get('like')
         # check params
-        if comment_id is None or like is None:
+        if comment_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         comment_id = int(comment_id)
-        like = int(like)
-        if like not in [0, 1]:
-            return JsonResponse({'status': -1, 'info': '参数格式错误'})
         # db
         with transaction.atomic():
             comment_query_set = Comment.objects.filter(comment_id=comment_id)
             if not comment_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '约束错误'})
-            if like == 0:
-                CommentLike.objects.filter(comment_id=comment_id).filter(user_id=user_id).delete()
-            elif not CommentLike.objects.filter(comment_id=comment_id).filter(user_id=user_id).exists():
+            now_like = CommentLike.objects.filter(comment_id=comment_id).filter(user_id=user_id)
+            if now_like.exists():
+                now_like.delete()
+                return JsonResponse({'status': 0, 'info': '已取消点赞'})
+            else:
                 new_like = CommentLike(user_id=user_id, comment_id=comment_id)
                 new_like.save()
-            return JsonResponse({'status': 0, 'info': '操作成功'})
+                return JsonResponse({'status': 0, 'info': '点赞成功'})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误'})

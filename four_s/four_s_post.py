@@ -267,7 +267,7 @@ def post_delete(request):
             if not user_permission_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '权限不足'})
             user_permission = user_permission_query_set[0].permission
-            if user_permission < 2 or user_id != post.user_id:
+            if user_permission < 2 and user_id != post.user_id:
                 return JsonResponse({'status': -1, 'info': '权限不足'})
             # delete
             Comment.objects.filter(post_id=post_id).delete()
