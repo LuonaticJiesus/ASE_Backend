@@ -43,7 +43,7 @@ def comment_queryPost(request):
             second_comments = {}
             for c in comment_query_set:
                 # first_comm
-                if c.root_comment_id is None:
+                if c.parent_id is None:
                     c_dict = c.to_dict()
                     first_comments[c.comment_id] = c_dict
                     c_dict['children'] = []
@@ -105,7 +105,10 @@ def comment_publish(request):
                 parent_comment = parent_query_set[0]
                 if parent_comment.post_id != post_id:
                     return JsonResponse({'status': -1, 'info': '约束错误'})
-                root_comment_id = parent_comment.root_comment_id
+                if parent_comment.parent_id is None:
+                    root_comment_id = parent_comment.comment_id
+                else:
+                    root_comment_id = parent_comment.root_comment_id
             if not Permission.objects.filter(block_id=post.block_id).filter(user_id=user_id).filter(
                     permission__gte=1).exists():
                 return JsonResponse({'status': -1, 'info': '权限不足'})
@@ -118,7 +121,7 @@ def comment_publish(request):
             message = Message(sender_id=user_id,
                               receiver_id=post.user_id,
                               content=content,
-                              source_type=1,  # 帖子
+                              source_type=2,  # 帖子
                               source_id=post_id,
                               time=datetime.now(),
                               status=0)
@@ -129,7 +132,7 @@ def comment_publish(request):
                 message = Message(sender_id=user_id,
                                   receiver_id=receiver_id,
                                   content=content,
-                                  source_type=1,  # 帖子
+                                  source_type=2,  # 帖子
                                   source_id=post_id,
                                   time=datetime.now(),
                                   status=0)
