@@ -172,25 +172,24 @@ def comment_delete(request):
                 Comment.objects.filter(comment_id=comment.comment_id).delete()
             else:
                 # 并查集
-                comm_parents = []
+                comm_parents = []  # [[c1_id, c1_parent_id], [c2_id, c2_parent_id]]
                 comm_query_set = Comment.objects.filter(root_comment_id=comment.root_comment_id)
                 for c in comm_query_set:
-                    if c.comment_id != comment.comment_id:
-                        comm_parents.append([c.comment_id, c.parent_id])
+                    if c.comment_id == comment.comment_id or c.comment_id == comment.root_comment_id:
+                        comm_parents.append([c.comment_id, c.comment_id])
                     else:
-                        comm_parents.append([c.comment_id, None])
+                        comm_parents.append([c.comment_id, c.parent_id])
 
                 def query_parent(parents: list, idx: int):
-                    if parents[idx][1] is not None:
+                    if parents[idx][1] != parents[idx][0]:
                         parents[idx][1] = query_parent(parents, parents[idx][1])
                     return parents[idx][1]
 
                 for i in range(len(comm_parents)):
-                    query_parent(comm_parents, i)
+                    comm_parents[i][1] = query_parent(comm_parents, i)
                 for i in range(len(comm_parents)):
                     if comm_parents[i][1] == comment.comment_id:
                         Comment.objects.filter(comment_id=comm_parents[i][0]).delete()
-                Comment.objects.filter(comment_id=comment_id).delete()
             return JsonResponse({'status': 0, 'info': '已删除'})
     except Exception as e:
         print(e)
