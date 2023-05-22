@@ -105,6 +105,8 @@ class Comment(models.Model):
         }
         if self.parent_id is not None:
             ret['parent_id'] = self.parent_id
+        if self.root_comment_id is not None:
+            ret['root_comment_id'] = self.root_comment_id
         return ret
 
 

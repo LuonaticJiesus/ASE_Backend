@@ -50,6 +50,7 @@ def comment_queryPost(request):
                 # second_comm
                 else:
                     second_comments[c.comment_id] = c.to_dict()
+
             for cid in second_comments.keys():
                 c_second_dict = second_comments[cid]
                 first_comments[c_second_dict['root_comment_id']]['children'].append(c_second_dict)
