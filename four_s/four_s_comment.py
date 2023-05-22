@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from four_s.models import Post, Permission, Comment, CommentLike, UserInfo, Message
 
 
-def wrap_comment(comm_dict, user_id):
+def wrap_comment(comm_dict: dict, user_id):
     comm_id = comm_dict['comment_id']
     user = UserInfo.objects.get(user_id=comm_dict['user_id'])
     comm_dict['like_cnt'] = CommentLike.objects.filter(comment_id=comm_id).count()
@@ -17,6 +17,10 @@ def wrap_comment(comm_dict, user_id):
         comment_id=comm_id).exists() else 0
     if user.avatar is not None:
         comm_dict['user_avatar'] = user.avatar
+    if 'parent_id' in comm_dict.keys():
+        reply_user_id = Comment.objects.get(comment_id=comm_dict['parent_id']).user_id
+        comm_dict['reply_user_id'] = reply_user_id
+        comm_dict['reply_user_name'] = UserInfo.objects.get(user_id=reply_user_id).name
 
 
 def check_txt(txt: str):
