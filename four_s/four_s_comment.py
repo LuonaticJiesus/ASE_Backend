@@ -42,17 +42,17 @@ def comment_queryPost(request):
             first_comments = {}
             second_comments = {}
             for c in comment_query_set:
-                # first_class
+                # first_comm
                 if c.root_comment_id is None:
                     c_dict = c.to_dict()
                     first_comments[c.comment_id] = c_dict
-                    c_dict['sub_comments'] = []
-                # second_class
+                    c_dict['children'] = []
+                # second_comm
                 else:
                     second_comments[c.comment_id] = c.to_dict()
             for cid in second_comments.keys():
                 c_second_dict = second_comments[cid]
-                first_comments[c_second_dict['root_comment_id']]['sub_comments'].append(c_second_dict)
+                first_comments[c_second_dict['root_comment_id']]['children'].append(c_second_dict)
 
             def cmp(element):
                 return element['time']
@@ -61,13 +61,12 @@ def comment_queryPost(request):
             for cid in first_comments.keys():
                 c_dict = first_comments[cid]
                 wrap_comment(c_dict, user_id)
-                c_dict['sub_comments'].sort(key=cmp, reverse=True)
-                for sub_dict in c_dict['sub_comments']:
+                c_dict['children'].sort(key=cmp, reverse=True)
+                for sub_dict in c_dict['children']:
                     wrap_comment(sub_dict, user_id)
                 comments.append(c_dict)
             comments.sort(key=cmp, reverse=True)
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': comments})
-
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
@@ -164,32 +163,12 @@ def comment_delete(request):
             if not user_permission_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '权限不足'})
             user_permission = user_permission_query_set[0].permission
-            if user_permission < 2 or user_id != comment.user_id:
+            if user_permission < 2 and user_id != comment.user_id:
                 return JsonResponse({'status': -1, 'info': '权限不足'})
             # delete
             if comment.parent_id is None:
                 Comment.objects.filter(root_comment_id=comment.comment_id).delete()
-                Comment.objects.filter(comment_id=comment.comment_id).delete()
-            else:
-                # 并查集
-                comm_parents = []  # [[c1_id, c1_parent_id], [c2_id, c2_parent_id]]
-                comm_query_set = Comment.objects.filter(root_comment_id=comment.root_comment_id)
-                for c in comm_query_set:
-                    if c.comment_id == comment.comment_id or c.comment_id == comment.root_comment_id:
-                        comm_parents.append([c.comment_id, c.comment_id])
-                    else:
-                        comm_parents.append([c.comment_id, c.parent_id])
-
-                def query_parent(parents: list, idx: int):
-                    if parents[idx][1] != parents[idx][0]:
-                        parents[idx][1] = query_parent(parents, parents[idx][1])
-                    return parents[idx][1]
-
-                for i in range(len(comm_parents)):
-                    comm_parents[i][1] = query_parent(comm_parents, i)
-                for i in range(len(comm_parents)):
-                    if comm_parents[i][1] == comment.comment_id:
-                        Comment.objects.filter(comment_id=comm_parents[i][0]).delete()
+            Comment.objects.filter(comment_id=comment.comment_id).delete()
             return JsonResponse({'status': 0, 'info': '已删除'})
     except Exception as e:
         print(e)
