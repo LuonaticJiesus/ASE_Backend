@@ -80,7 +80,7 @@ class Block(models.Model):
             'name': self.name,
             'avatar': self.avatar,
             'info': self.info,
-            'time': self.time.strftime('%Y-%m-%d %H:%I:%S'),
+            'time': self.time.strftime('%Y-%m-%d %H:%M:%S'),
             'approve_permission': self.approve_permission
         }
         return ret
@@ -101,7 +101,7 @@ class Comment(models.Model):
             'user_id': self.user_id,
             'post_id': self.post_id,
             'txt': self.txt,
-            'time': self.time.strftime('%Y-%m-%d %H:%I:%S')
+            'time': self.time.strftime('%Y-%m-%d %H:%M:%S')
         }
         if self.parent_id is not None:
             ret['parent_id'] = self.parent_id
@@ -131,8 +131,8 @@ class Notice(models.Model):
             'txt': self.txt,
             'user_id': self.user_id,
             'block_id': self.block_id,
-            'time': self.time.strftime('%Y-%m-%d %H:%I:%S'),
-            'ddl': self.ddl.strftime('%Y-%m-%d %H:%I:%S')
+            'time': self.time.strftime('%Y-%m-%d %H:%M:%S'),
+            'ddl': self.ddl.strftime('%Y-%m-%d %H:%M:%S')
         }
 
 
@@ -160,7 +160,7 @@ class Message(models.Model):
             'source_type': self.source_type,
             'source_id': self.source_id,
             'status': self.status,
-            'time': self.time.strftime('%Y-%m-%d %H:%I:%S')
+            'time': self.time.strftime('%Y-%m-%d %H:%M:%S')
         }
 
 
