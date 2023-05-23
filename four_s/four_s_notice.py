@@ -255,10 +255,11 @@ def notice_delete(request):
             if not notice_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '通知不存在'})
             notice = notice_query_set[0]
-            if notice.user_id != user_id:
+            if not Permission.objects.filter(block_id=notice.block_id).filter(user_id=user_id).filter(permission__gte=2).exists():
                 return JsonResponse({'status': -1, 'info': '权限不足'})
-            notice.delete()
+            # delete
             NoticeConfirm.objects.filter(notice_id=notice_id).delete()
+            notice.delete()
             return JsonResponse({'status': 0, 'info': '已删除'})
     except Exception as e:
         print(e)
