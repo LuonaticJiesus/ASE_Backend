@@ -91,6 +91,7 @@ class Comment(models.Model):
     user_id = models.IntegerField()
     post_id = models.IntegerField()
     parent_id = models.IntegerField(null=True)  # null: to post, else to comment
+    reply_user_id = models.IntegerField(null=True)  # null: to post, else to comment
     root_comment_id = models.IntegerField(null=True)  # null: to post, else: the first comment
     txt = models.TextField()
     time = models.DateTimeField()
@@ -107,6 +108,8 @@ class Comment(models.Model):
             ret['parent_id'] = self.parent_id
         if self.root_comment_id is not None:
             ret['root_comment_id'] = self.root_comment_id
+        if self.reply_user_id is not None:
+            ret['reply_user_id'] = self.reply_user_id
         return ret
 
 

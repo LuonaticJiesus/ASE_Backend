@@ -17,10 +17,7 @@ def wrap_comment(comm_dict: dict, user_id):
         comment_id=comm_id).exists() else 0
     if user.avatar is not None:
         comm_dict['user_avatar'] = user.avatar
-    if 'parent_id' in comm_dict.keys():
-        reply_user_id = Comment.objects.get(comment_id=comm_dict['parent_id']).user_id
-        comm_dict['reply_user_id'] = reply_user_id
-        comm_dict['reply_user_name'] = UserInfo.objects.get(user_id=reply_user_id).name
+    comm_dict['reply_user_name'] = UserInfo.objects.get(user_id=comm_dict['reply_user_id']).name
 
 
 def check_txt(txt: str):
@@ -103,11 +100,13 @@ def comment_publish(request):
                 return JsonResponse({'status': -1, 'info': '帖子不存在'})
             root_comment_id = None
             post = Post.objects.get(post_id=post_id)
+            reply_user_id = post.user_id
             if parent_id is not None:
                 parent_query_set = Comment.objects.filter(comment_id=parent_id)
                 if not parent_query_set.exists():
                     return JsonResponse({'status': -1, 'info': '约束错误'})
                 parent_comment = parent_query_set[0]
+                reply_user_id = parent_comment.user_id
                 if parent_comment.post_id != post_id:
                     return JsonResponse({'status': -1, 'info': '约束错误'})
                 if parent_comment.parent_id is None:
@@ -117,7 +116,8 @@ def comment_publish(request):
             if not Permission.objects.filter(block_id=post.block_id).filter(user_id=user_id).filter(
                     permission__gte=1).exists():
                 return JsonResponse({'status': -1, 'info': '权限不足'})
-            comment = Comment(user_id=user_id, post_id=post_id, parent_id=parent_id, root_comment_id=root_comment_id,
+            comment = Comment(user_id=user_id, post_id=post_id,
+                              parent_id=parent_id, root_comment_id=root_comment_id, reply_user_id=reply_user_id,
                               txt=txt, time=datetime.now())
             comment.save()
             # send a message
