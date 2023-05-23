@@ -14,6 +14,8 @@ def wrap_post(p, user_id):
     p_dict['block_name'] = Block.objects.get(block_id=p.block_id).name
     p_dict['like_cnt'] = PostLike.objects.filter(post_id=p.post_id).count()
     p_dict['comment_cnt'] = Comment.objects.filter(post_id=p.post_id).count()
+    p_dict['favor_cnt'] = PostFavor.objects.filter(post_id=p.post_id).count()
+    p_dict['favor_state'] = 1 if PostFavor.objects.filter(user_id=user_id).filter(post_id=p.post_id).exists() else 0
     p_dict['like_state'] = 1 if PostLike.objects.filter(user_id=user_id).filter(post_id=p.post_id).exists() else 0
     perm_query_set = Permission.objects.filter(block_id=p.block_id).filter(user_id=p.user_id)
     if perm_query_set.exists():
