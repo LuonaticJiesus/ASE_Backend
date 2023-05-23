@@ -205,14 +205,10 @@ def notice_confirm(request):
         user_id = int(request.META.get('HTTP_USERID'))
         data = json.loads(request.body)
         notice_id = data.get('notice_id')
-        confirm = data.get('confirm')
         # check params
-        if notice_id is None or confirm is None:
+        if notice_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         notice_id = int(notice_id)
-        confirm = int(confirm)
-        if confirm not in [0, 1]:
-            return JsonResponse({'status': -1, 'info': '参数格式错误'})
         # db
         with transaction.atomic():
             notice_query_set = Notice.objects.filter(notice_id=notice_id)
@@ -222,13 +218,14 @@ def notice_confirm(request):
             block_id = notice.block_id
             if not Permission.objects.filter(block_id=block_id).filter(user_id=user_id).exists():
                 return JsonResponse({'status': 0, 'info': '未订阅模块'})
-            if confirm == 0:
-                NoticeConfirm.objects.filter(notice_id=notice_id).filter(user_id=user_id).delete()
+            now_confirm = NoticeConfirm.objects.filter(user_id=user_id).filter(notice_id=notice_id)
+            if now_confirm.exists():
+                now_confirm.delete()
                 return JsonResponse({'status': 0, 'info': '已取消确认'})
-            if not NoticeConfirm.objects.filter(notice_id=notice_id).filter(user_id=user_id).exists():
-                new_confirm = NoticeConfirm(notice_id=notice_id, user_id=user_id)
+            else:
+                new_confirm = NoticeConfirm(user_id=user_id, notice_id=notice_id)
                 new_confirm.save()
-            return JsonResponse({'status': 0, 'info': '已确认'})
+                return JsonResponse({'status': 0, 'info': '已确认'})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误，查询失败'})
