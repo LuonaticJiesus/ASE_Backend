@@ -46,6 +46,9 @@ urlpatterns = [
     path('post/delete/', post_delete, name='post_delete'),
     path('post/like/', post_like, name='post_like'),
     path('post/choose/', post_choose, name='post_choose'),
+    path('post/favor/', post_favor, name='post_favor'),
+    path('post/queryFavor/', post_query_favor, name='post_query_favor'),
+
 
     # comment
     path('comment/queryPost/', comment_queryPost, name='comment_queryPost'),

@@ -301,9 +301,8 @@ def post_like(request):
             if not post_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '帖子不存在'})
             block_id = post_query_set[0].block_id
-            if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(
-                    permission__gte=1).exists():
-                return JsonResponse({'status': -1, 'info': '权限错误'})
+            if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).exists():
+                return JsonResponse({'status': -1, 'info': '未订阅模块'})
             now_like = PostLike.objects.filter(post_id=post_id).filter(user_id=user_id)
             if now_like.exists():
                 now_like.delete()
@@ -348,6 +347,70 @@ def post_choose(request):
                 post_chosen = PostChosen(post_id=post_id, block_id=block_id)
                 post_chosen.save()
             return JsonResponse({'status': 0, 'info': '操作成功'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误'})
+
+
+@csrf_exempt
+def post_favor(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        user_id = int(request.META.get('HTTP_USERID'))
+        data = json.loads(request.body)
+        post_id = data.get('post_id')
+        # check params
+        if post_id is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        post_id = int(post_id)
+        # db
+        with transaction.atomic():
+            post_query_set = Post.objects.filter(post_id=post_id)
+            if not post_query_set.exists():
+                return JsonResponse({'status': -1, 'info': '帖子不存在'})
+            block_id = post_query_set[0].block_id
+            if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).exists():
+                return JsonResponse({'status': -1, 'info': '未订阅模块'})
+            now_favor = PostFavor.objects.filter(user_id=user_id).filter(post_id=post_id)
+            if now_favor.exists():
+                now_favor.delete()
+                return JsonResponse({'status': 0, 'info': '已取消收藏'})
+            else:
+                new_favor = PostFavor(user_id=user_id, post_id=post_id)
+                new_favor.save()
+                return JsonResponse({'status': 0, 'info': '已收藏'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status': -1, 'info': '操作错误'})
+
+
+@csrf_exempt
+def post_query_favor(request):
+    if request.method != 'GET':
+        return JsonResponse({'status': -1, 'info': '请求方式错误'})
+    try:
+        user_id = int(request.META.get('HTTP_USERID'))
+        block_id = request.GET.get('block_id')
+        # check params
+        if block_id is None:
+            return JsonResponse({'status': -1, 'info': '缺少参数'})
+        block_id = int(block_id)
+        # db
+        with transaction.atomic():
+            if not Block.objects.filter(block_id=block_id).exists():
+                return JsonResponse({'status': -1, 'info': '模块不存在'})
+            favor_post_ids = set()
+            favor_query_set = PostFavor.objects.filter(user_id=user_id)
+            for f in favor_query_set:
+                favor_post_ids.add(f.post_id)
+            post_query_set = Post.objects.filter(block_id=block_id).order_by('-time')
+            posts = []
+            for post in post_query_set:
+                if post.post_id in favor_post_ids:
+                    p_dict = wrap_post(post, user_id)
+                    posts.append(p_dict)
+            return JsonResponse({'status': 0, 'info': '查询成功', 'data': posts})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误'})
