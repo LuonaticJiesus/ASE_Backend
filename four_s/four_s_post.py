@@ -232,7 +232,7 @@ def post_publish(request):
         # db
         with transaction.atomic():
             if not Block.objects.filter(block_id=block_id).exists():
-                return JsonResponse({'status': -1, 'info': '约束错误'})
+                return JsonResponse({'status': -1, 'info': '模块id不存在'})
             if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(
                     permission__gte=1).exists():
                 return JsonResponse({'status': -1, 'info': '权限不足'})
