@@ -322,14 +322,10 @@ def post_choose(request):
         user_id = int(request.META.get('HTTP_USERID'))
         data = json.loads(request.body)
         post_id = data.get('post_id')
-        chosen = data.get('chosen')
         # check params
-        if post_id is None or chosen is None:
+        if post_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         post_id = int(post_id)
-        chosen = int(chosen)
-        if chosen not in [0, 1]:
-            return JsonResponse({'status': -1, 'info': '参数错误'})
         # db
         with transaction.atomic():
             post_query_set = Post.objects.filter(post_id=post_id)
@@ -339,12 +335,14 @@ def post_choose(request):
             if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(
                     permission__gte=2).exists():
                 return JsonResponse({'status': -1, 'info': '权限错误'})
-            if chosen == 0:
-                PostChosen.objects.filter(block_id=block_id).delete()
-            elif not PostChosen.objects.filter(block_id=block_id).filter(post_id=post_id).exists():
-                post_chosen = PostChosen(post_id=post_id, block_id=block_id)
-                post_chosen.save()
-            return JsonResponse({'status': 0, 'info': '操作成功'})
+            now_chosen = PostChosen.objects.filter(block_id=block_id).filter(post_id=post_id)
+            if now_chosen.exists():
+                now_chosen.delete()
+                return JsonResponse({'status': 0, 'info': '已取消加精'})
+            else:
+                new_chosen = PostChosen(block_id=block_id, post_id=post_id)
+                new_chosen.save()
+                return JsonResponse({'status': 0, 'info': '帖子已加精'})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误'})
