@@ -33,7 +33,7 @@ def create_token(user_id):
     header = encrypt(HEADER)
     # 2. 构造Payload(有效期按秒计算)
     payload = {"user_id": user_id, "iat": time.time(),
-               "exp": time.time() + 60 * 60}
+               "exp": time.time() + 60 * 60 * 12}
     payload = encrypt(payload)
     # 3. MD5 生成签名
     md5 = hashlib.md5()
