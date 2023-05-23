@@ -29,7 +29,7 @@ def wrap_notice(notice, user_id):
     n_dict['user_name'] = UserInfo.objects.get(user_id=notice.user_id).name
     n_dict['block_name'] = Block.objects.get(block_id=notice.block_id).name
     n_dict['confirm_state'] = 1 if NoticeConfirm.objects.filter(user_id=user_id).filter(
-        notice_id=notice).exists() else 0
+        notice_id=notice.notice_id).exists() else 0
     return n_dict
 
 
