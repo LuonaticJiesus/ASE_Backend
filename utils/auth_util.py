@@ -92,7 +92,7 @@ class AuthorizeMiddleware(MiddlewareMixin):
             user_id = str(request.META.get('HTTP_USERID'))
             token = request.META.get('HTTP_TOKEN')
             if user_id is None or token is None:
-                return JsonResponse({'status': -100, 'info': '请登录'})
+                return JsonResponse({'status': -100, 'info': '请刷新页面，重新登录'})
             if not check_token(user_id, token):
                 return JsonResponse({'status': -100, 'info': '请刷新页面，重新登录'})
 
