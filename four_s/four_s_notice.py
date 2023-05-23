@@ -39,14 +39,16 @@ def notice_query_recv(request):
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
         user_id = int(request.META.get('HTTP_USERID'))
-        show_confirm = request.GET.get('show_confirm')
+        confirm_op = request.GET.get('confirm_op')
         undue_op = request.GET.get('undue_op')
         # check params
-        if show_confirm is None or undue_op is None:
+        if confirm_op is None:
+            confirm_op = 0
+        if undue_op is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
-        show_confirm = int(show_confirm)
+        confirm_op = int(confirm_op)
         undue_op = int(undue_op)
-        if show_confirm not in [0, 1] or undue_op not in [-1, 0, 1]:
+        if confirm_op not in [-1, 0, 1] or undue_op not in [-1, 0, 1]:
             return JsonResponse({'status': -1, 'info': '参数错误'})
         # db
         with transaction.atomic():
@@ -63,9 +65,13 @@ def notice_query_recv(request):
                     block_notice_queryset = Notice.objects.filter(block_id=bid).filter(ddl__lte=now_time)
                 for notice in block_notice_queryset:
                     notice_id_set.add(notice.notice_id)
-            if show_confirm == 0:
-                for notice in NoticeConfirm.objects.filter(user_id=user_id):
-                    notice_id_set.remove(notice.notice_id)
+            confirm_id_set = set()
+            for notice in NoticeConfirm.objects.filter(user_id=user_id):
+                confirm_id_set.add(notice.notice_id)
+            if confirm_op == 1:  # not confirmed
+                notice_id_set = notice_id_set - confirm_id_set
+            elif confirm_op == -1:  # confirmed
+                notice_id_set = notice_id_set & confirm_id_set
             notices = []
             for nid in notice_id_set:
                 notice = Notice.objects.get(notice_id=nid)
