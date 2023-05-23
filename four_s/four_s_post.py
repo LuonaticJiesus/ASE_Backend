@@ -10,7 +10,10 @@ from four_s.models import Block, Permission, Post, UserInfo, PostLike, Comment, 
 
 def wrap_post(p, user_id):
     p_dict = p.to_dict()
-    p_dict['user_name'] = UserInfo.objects.get(user_id=p.user_id).name
+    post_author = UserInfo.objects.get(user_id=p.user_id)
+    p_dict['user_name'] = post_author.name
+    if post_author.avatar is not None:
+        p_dict['user_avatar'] = post_author.avatar
     p_dict['block_name'] = Block.objects.get(block_id=p.block_id).name
     p_dict['like_cnt'] = PostLike.objects.filter(post_id=p.post_id).count()
     p_dict['comment_cnt'] = Comment.objects.filter(post_id=p.post_id).count()
