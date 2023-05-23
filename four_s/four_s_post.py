@@ -20,11 +20,6 @@ def wrap_post(p, user_id):
     p_dict['favor_cnt'] = PostFavor.objects.filter(post_id=p.post_id).count()
     p_dict['favor_state'] = 1 if PostFavor.objects.filter(user_id=user_id).filter(post_id=p.post_id).exists() else 0
     p_dict['like_state'] = 1 if PostLike.objects.filter(user_id=user_id).filter(post_id=p.post_id).exists() else 0
-    perm_query_set = Permission.objects.filter(block_id=p.block_id).filter(user_id=p.user_id)
-    if perm_query_set.exists():
-        p_dict['permission'] = perm_query_set[0].permission
-    else:
-        p_dict['permission'] = -1
     comment_query_set = Comment.objects.filter(post_id=p.post_id).order_by('-time')
     if not comment_query_set.exists():
         p_dict['latest_update_user'] = p_dict['user_name']
