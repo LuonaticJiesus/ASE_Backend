@@ -289,14 +289,10 @@ def post_like(request):
         user_id = int(request.META.get('HTTP_USERID'))
         data = json.loads(request.body)
         post_id = data.get('post_id')
-        like = data.get('like')
         # check params
-        if post_id is None or like is None:
+        if post_id is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
         post_id = int(post_id)
-        like = int(like)
-        if like not in [0, 1]:
-            return JsonResponse({'status': -1, 'info': '参数错误'})
         # db
         with transaction.atomic():
             post_query_set = Post.objects.filter(post_id=post_id)
@@ -306,12 +302,14 @@ def post_like(request):
             if not Permission.objects.filter(user_id=user_id).filter(block_id=block_id).filter(
                     permission__gte=1).exists():
                 return JsonResponse({'status': -1, 'info': '权限错误'})
-            if like == 0:
-                PostLike.objects.filter(post_id=post_id).filter(user_id=user_id).delete()
-            elif not PostLike.objects.filter(post_id=post_id).filter(user_id=user_id).exists():
+            now_like = PostLike.objects.filter(post_id=post_id).filter(user_id=user_id)
+            if now_like.exists():
+                now_like.delete()
+                return JsonResponse({'status': 0, 'info': '已取消点赞'})
+            else:
                 new_like = PostLike(post_id=post_id, user_id=user_id)
                 new_like.save()
-            return JsonResponse({'status': 0, 'info': '操作成功'})
+                return JsonResponse({'status': 0, 'info': '点赞成功'})
     except Exception as e:
         print(e)
         return JsonResponse({'status': -1, 'info': '操作错误'})
