@@ -24,18 +24,26 @@ def check_ddl(ddl: str):
         return False
 
 
+def wrap_notice(notice, user_id):
+    n_dict = notice.to_dict()
+    n_dict['user_name'] = UserInfo.objects.get(user_id=notice.user_id).name
+    n_dict['block_name'] = Block.objects.get(block_id=notice.block_id).name
+    n_dict['confirm_state'] = 1 if NoticeConfirm.objects.filter(user_id=user_id).filter(
+        notice_id=notice).exists() else 0
+    return n_dict
+
+
 @csrf_exempt
 def notice_query_recv(request):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
-        user_id = request.GET.get('user_id')
+        user_id = int(request.META.get('HTTP_USERID'))
         show_confirm = request.GET.get('show_confirm')
         undue_op = request.GET.get('undue_op')
         # check params
-        if user_id is None or show_confirm is None or undue_op is None:
+        if show_confirm is None or undue_op is None:
             return JsonResponse({'status': -1, 'info': '缺少参数'})
-        user_id = int(user_id)
         show_confirm = int(show_confirm)
         undue_op = int(undue_op)
         if show_confirm not in [0, 1] or undue_op not in [-1, 0, 1]:
@@ -61,9 +69,7 @@ def notice_query_recv(request):
             notices = []
             for nid in notice_id_set:
                 notice = Notice.objects.get(notice_id=nid)
-                n_dict = notice.to_dict()
-                n_dict['user_name'] = UserInfo.objects.get(user_id=notice.user_id).name
-                n_dict['block_name'] = Block.objects.get(block_id=notice.block_id).name
+                n_dict = wrap_notice(notice, user_id)
                 notices.append(n_dict)
 
             def cmp(element):
@@ -81,23 +87,16 @@ def notice_query_send(request):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
-        user_id = request.GET.get('user_id')
-        # check params
-        if user_id is None:
-            return JsonResponse({'status': -1, 'info': '缺少参数'})
-        user_id = int(user_id)
+        user_id = int(request.META.get('HTTP_USERID'))
         # db
         with transaction.atomic():
             user_query_set = UserInfo.objects.filter(id=user_id)
             if not user_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '用户不存在'})
-            user_name = user_query_set[0].name
             notice_query_set = Notice.objects.filter(user_id=user_id).order_by('-time')
             notices = []
             for n in notice_query_set:
-                n_dict = n.to_dict()
-                n_dict['user_name'] = user_name
-                n_dict['block_name'] = Block.objects.get(block_id=n.block_id)
+                n_dict = wrap_notice(n, user_id)
                 notices.append(n_dict)
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': notices})
     except Exception as e:
@@ -109,6 +108,7 @@ def notice_query_by_id(request):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
+        user_id = int(request.META.get('HTTP_USERID'))
         notice_id = request.GET.get('notice_id')
         # check params
         if notice_id is None:
@@ -120,9 +120,7 @@ def notice_query_by_id(request):
             if not notice_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '通知不存在'})
             notice = notice_query_set[0]
-            n_dict = notice.to_dict()
-            n_dict['user_name'] = UserInfo.objects.get(user_id=notice.user_id).name
-            n_dict['block_name'] = Block.objects.get(block_id=notice.block_id).name
+            n_dict = wrap_notice(notice, user_id)
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': [n_dict]})
     except Exception as e:
         print(e)
@@ -134,6 +132,7 @@ def notice_query_block(request):
     if request.method != 'GET':
         return JsonResponse({'status': -1, 'info': '请求方式错误'})
     try:
+        user_id = int(request.META.get('HTTP_USERID'))
         block_id = request.GET.get('block_id')
         # check params
         if block_id is None:
@@ -148,9 +147,7 @@ def notice_query_block(request):
             notice_query_set = Notice.objects.filter(block_id=block_id).order_by('-time')
             notices = []
             for n in notice_query_set:
-                n_dict = n.to_dict()
-                n_dict['user_name'] = UserInfo.objects.get(user_id=n.user_id).name
-                n_dict['block_name'] = block_name
+                n_dict = wrap_notice(n, user_id)
                 notices.append(n_dict)
             return JsonResponse({'status': 0, 'info': '查询成功', 'data': notices})
     except Exception as e:
@@ -191,7 +188,7 @@ def notice_publish(request):
                     permission__gte=2).exists():
                 return JsonResponse({'status': -1, 'info': '缺少权限'})
             notice = Notice(title=title, txt=txt, user_id=user_id, block_id=block_id,
-                            time=datetime.now(),    # publish_time
+                            time=datetime.now(),  # publish_time
                             ddl=datetime.strptime(ddl, '%Y-%m-%d %H:%M:%S'))
             notice.save()
             return JsonResponse({'status': 0, 'info': '已发布', 'data': {'notice_id': notice.notice_id}})
@@ -255,7 +252,8 @@ def notice_delete(request):
             if not notice_query_set.exists():
                 return JsonResponse({'status': -1, 'info': '通知不存在'})
             notice = notice_query_set[0]
-            if not Permission.objects.filter(block_id=notice.block_id).filter(user_id=user_id).filter(permission__gte=2).exists():
+            if not Permission.objects.filter(block_id=notice.block_id).filter(user_id=user_id).filter(
+                    permission__gte=2).exists():
                 return JsonResponse({'status': -1, 'info': '权限不足'})
             # delete
             NoticeConfirm.objects.filter(notice_id=notice_id).delete()
