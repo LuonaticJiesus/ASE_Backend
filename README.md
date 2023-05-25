@@ -221,13 +221,17 @@
 
 ### `four_s_block.py`
 
-| 函数名                 | 传入参数                                                     | 返回值 | 功能（考虑贡献值）                                           | 前置条件（权限等） | 异常处理             | 接口路由                 | 请求类型 |
-| ---------------------- | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ | ------------------ | -------------------- | ------------------------ | -------- |
-| block_query_all        |                                                              |        | 查询所有模块信息                                             |                    |                      | `block/queryAll/`        | GET      |
-| block_query_permission | user_id(request.META自带)<br />permission[]                  |        | 根据permission[]数组中的权限限制查找Block。<br />数组中的权限意义：用户在不同Block中的权限 |                    |                      | `block/queryPermission/` | GET      |
-| block_info             | block_id                                                     |        | 查询模块信息                                                 |                    |                      | block/info/              | GET      |
-| block_subscribe        | user_id(request.META自带)<br />block_id<br />subscribe(0:取消订阅) |        | subscribe=0:取消订阅<br />subscribe=1:订阅，`update_perm = 1 if block_perm < 0 else 0` |                    | subscribe范围非[0,1] | `block/subscribe/`       | POST     |
-| block_random           | user_id(request.META自带)<br />number(默认值20)              |        | 随机选取['block_id', 'name', 'avatar', 'info']中的一项排序，获取前number个block |                    |                      | `block/random/`          | GET      |
+| 函数名                 | 传入参数                                                     | 返回值 | 功能（考虑贡献值）                                           | 前置条件（权限等）      | 异常处理                                                     | 接口路由                 | 请求类型 |
+| ---------------------- | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ | ----------------------- | ------------------------------------------------------------ | ------------------------ | -------- |
+| block_query_all        |                                                              |        | 查询所有模块信息                                             |                         |                                                              | `block/queryAll/`        | GET      |
+| block_query_permission | user_id(request.META自带)<br />permission[]                  |        | 根据permission[]数组中的权限限制查找Block。<br />数组中的权限意义：用户在不同Block中的权限 |                         |                                                              | `block/queryPermission/` | GET      |
+| block_info             | block_id                                                     |        | 查询模块信息                                                 |                         |                                                              | `block/info/`            | GET      |
+| block_subscribe        | user_id(request.META自带)<br />block_id<br />subscribe(0:取消订阅) |        | subscribe=0:取消订阅<br />subscribe=1:订阅，`update_perm = 1 if block_perm < 0 else 0` |                         | subscribe范围非[0,1]                                         | `block/subscribe/`       | POST     |
+| block_random           | user_id(request.META自带)<br />number(默认值20)              |        | 随机选取['block_id', 'name', 'avatar', 'info']中的一项排序，获取前number个block |                         |                                                              | `block/random/`          | GET      |
+| block_search_all       | keyword（关键词）                                            |        | 按关键词查询所有模块                                         |                         |                                                              | `block/searchAll/`       | GET      |
+| block_search_my        | user_id(request.META自带)<br />keyword                       |        | 在我的模块中按关键词查找模块                                 |                         |                                                              | `block/searchMy/`        | GET      |
+| block_modify           | user_id(request.META自带)<br />block_id<br />name<br />avatar<br />info<br />approve_permission |        | 修改模块的基本数据                                           | 用户在该模块下的权限为4 | 名字不合法<br />简介不合法<br />权限不合法<br />模块不存在<br />权限不足 | `block/modify/`          | POST     |
+| block_delete           | user_id(request.META自带)<br />block_id                      |        | 删除模块以及模块下的所有数据（包括通知、分享、贡献度等）     | 用户在该模块下的权限为4 |                                                              | `block/delete/`          | POST     |
 
 
 
