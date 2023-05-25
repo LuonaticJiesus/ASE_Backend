@@ -249,7 +249,7 @@ def block_modify(request):
         user_id = int(request.META.get('HTTP_USERID'))
         data = json.loads(request.body)
         block_id = data.get('block_id')
-        name = data.get('block_id')
+        name = data.get('name')
         avatar = data.get('avatar')
         info = data.get('info')
         approve_permission = data.get('approve_permission')
