@@ -121,27 +121,27 @@ def comment_publish(request):
                               txt=txt, time=datetime.now())
             comment.save()
             # send a message
-            user_name = UserInfo.objects.get(user_id=user_id).name
-            content = f"{user_name}回复了您的帖子[{post.title}]!"
-            message = Message(sender_id=user_id,
-                              receiver_id=post.user_id,
-                              content=content,
-                              source_type=2,  # 帖子
-                              source_id=post_id,
-                              time=datetime.now(),
-                              status=0)
-            message.save()
-            if parent_id is not None:
-                content = f"{user_name}在帖子[{post.title}]中回复了您的评论!"
-                receiver_id = Comment.objects.get(comment_id=parent_id).user_id
-                message = Message(sender_id=user_id,
-                                  receiver_id=receiver_id,
-                                  content=content,
-                                  source_type=2,  # 帖子
-                                  source_id=post_id,
-                                  time=datetime.now(),
-                                  status=0)
-                message.save()
+            # user_name = UserInfo.objects.get(user_id=user_id).name
+            # content = f"{user_name}回复了您的帖子[{post.title}]!"
+            # message = Message(sender_id=user_id,
+            #                   receiver_id=post.user_id,
+            #                   content=content,
+            #                   source_type=2,  # 帖子
+            #                   source_id=post_id,
+            #                   time=datetime.now(),
+            #                   status=0)
+            # message.save()
+            # if parent_id is not None:
+            #     content = f"{user_name}在帖子[{post.title}]中回复了您的评论!"
+            #     receiver_id = Comment.objects.get(comment_id=parent_id).user_id
+            #     message = Message(sender_id=user_id,
+            #                       receiver_id=receiver_id,
+            #                       content=content,
+            #                       source_type=2,  # 帖子
+            #                       source_id=post_id,
+            #                       time=datetime.now(),
+            #                       status=0)
+            #     message.save()
             return JsonResponse({'status': 0, 'info': '已发布'})
     except Exception as e:
         print(e)

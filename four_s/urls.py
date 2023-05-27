@@ -71,9 +71,9 @@ urlpatterns = [
     path('permission/set/', permission_set, name='permission_set'),
 
     # message
-    path('message/queryRec/', message_query_rec, name='message_query_rec'),
-    path('message/confirm/', message_confirm, name='message_confirm'),
-    path('message/confirmAll/', message_confirm_all, name='message_confirm_all'),
+    # path('message/queryRec/', message_query_rec, name='message_query_rec'),
+    # path('message/confirm/', message_confirm, name='message_confirm'),
+    # path('message/confirmAll/', message_confirm_all, name='message_confirm_all'),
 
     # file
     path('file/upload/', file_upload, name='file_upload'),
