@@ -117,14 +117,16 @@
 
 主键：comment_id
 
-| 属性名     | 类型          | 限制 | 说明                 |
-| ---------- | ------------- | ---- | -------------------- |
-| comment_id | AutoField     |      |                      |
-| user_id    | IntegerField  |      | 发表评论的用户id     |
-| post_id    | IntegerField  |      | 评论所在帖子id       |
-| parent_id  | IntegerField  | 可空 | 评论所回复的父级评论 |
-| txt        | TextField     |      |                      |
-| time       | DateTimeField |      | 帖子发布时间         |
+| 属性名          | 类型          | 限制 | 说明                         |
+| --------------- | ------------- | ---- | ---------------------------- |
+| comment_id      | AutoField     |      |                              |
+| user_id         | IntegerField  |      | 发表评论的用户id             |
+| post_id         | IntegerField  |      | 评论所在帖子id               |
+| parent_id       | IntegerField  | 可空 | 评论所回复的父级评论         |
+| reply_user_id   | IntegerField  | 可空 | 评论所回复的父级评论的发布者 |
+| root_comment_id | IntegerField  | 可空 | ==第一条评论==               |
+| txt             | TextField     |      |                              |
+| time            | DateTimeField |      | 帖子发布时间                 |
 
 
 
@@ -219,13 +221,17 @@
 
 ### `four_s_block.py`
 
-| 函数名                 | 传入参数                                                     | 返回值 | 功能（考虑贡献值）                                           | 前置条件（权限等） | 异常处理             | 接口路由                 | 请求类型 |
-| ---------------------- | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ | ------------------ | -------------------- | ------------------------ | -------- |
-| block_query_all        |                                                              |        | 查询所有模块信息                                             |                    |                      | `block/queryAll/`        | GET      |
-| block_query_permission | user_id(request.META自带)<br />permission                    |        |                                                              |                    |                      | `block/queryPermission/` | GET      |
-| block_info             | block_id                                                     |        | 查询模块信息                                                 |                    |                      | block/info/              | GET      |
-| block_subscribe        | user_id(request.META自带)<br />block_id<br />subscribe(0:取消订阅) |        | subscribe=0:取消订阅<br />subscribe=1:订阅，`update_perm = 1 if block_perm < 0 else 0` |                    | subscribe范围非[0,1] | `block/subscribe/`       | POST     |
-| block_random           | user_id(request.META自带)<br />number(默认值20)              |        | 随机选取['block_id', 'name', 'avatar', 'info']中的一项排序，获取前number个block |                    |                      | `block/random/`          | GET      |
+| 函数名                 | 传入参数                                                     | 返回值 | 功能（考虑贡献值）                                           | 前置条件（权限等）      | 异常处理                                                     | 接口路由                 | 请求类型 |
+| ---------------------- | ------------------------------------------------------------ | ------ | ------------------------------------------------------------ | ----------------------- | ------------------------------------------------------------ | ------------------------ | -------- |
+| block_query_all        |                                                              |        | 查询所有模块信息                                             |                         |                                                              | `block/queryAll/`        | GET      |
+| block_query_permission | user_id(request.META自带)<br />permission[]                  |        | 根据permission[]数组中的权限限制查找Block。<br />数组中的权限意义：用户在不同Block中的权限 |                         |                                                              | `block/queryPermission/` | GET      |
+| block_info             | block_id                                                     |        | 查询模块信息                                                 |                         |                                                              | `block/info/`            | GET      |
+| block_subscribe        | user_id(request.META自带)<br />block_id<br />subscribe(0:取消订阅) |        | subscribe=0:取消订阅<br />subscribe=1:订阅，`update_perm = 1 if block_perm < 0 else 0` |                         | subscribe范围非[0,1]                                         | `block/subscribe/`       | POST     |
+| block_random           | user_id(request.META自带)<br />number(默认值20)              |        | 随机选取['block_id', 'name', 'avatar', 'info']中的一项排序，获取前number个block |                         |                                                              | `block/random/`          | GET      |
+| block_search_all       | keyword（关键词）                                            |        | 按关键词查询所有模块                                         |                         |                                                              | `block/searchAll/`       | GET      |
+| block_search_my        | user_id(request.META自带)<br />keyword                       |        | 在我的模块中按关键词查找模块                                 |                         |                                                              | `block/searchMy/`        | GET      |
+| block_modify           | user_id(request.META自带)<br />block_id<br />name<br />avatar<br />info<br />approve_permission |        | 修改模块的基本数据                                           | 用户在该模块下的权限为4 | 名字不合法<br />简介不合法<br />权限不合法<br />模块不存在<br />权限不足 | `block/modify/`          | POST     |
+| block_delete           | user_id(request.META自带)<br />block_id                      |        | 删除模块以及模块下的所有数据（包括通知、分享、贡献度等）     | 用户在该模块下的权限为4 |                                                              | `block/delete/`          | POST     |
 
 
 
@@ -233,11 +239,11 @@
 
 | 函数名            | 传入参数                                                     | 返回值           | 功能（考虑贡献值）                                           | 前置条件（权限等）                               | 异常处理                                                     | 接口路由             | 请求类型       |
 | ----------------- | ------------------------------------------------------------ | ---------------- | ------------------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------------------ | -------------------- | -------------- |
-| wrap_comment      | 一条comment数据项<br />用户id                                | 包装好的字典数据 | 封装数据：comment数据+like_cnt+user_name+like_state          |                                                  |                                                              |                      | 不属于接口函数 |
+| wrap_comment      | 一条comment数据项<br />用户id                                | 包装好的字典数据 | 封装数据：comment数据+like_cnt+user_name+like_state+user_avatar(如果有)+（如果有parent_id：）reply_user_id+reply_user_name |                                                  |                                                              |                      | 不属于接口函数 |
 | comment_queryPost | user_id(request.META自带)<br />post_id                       |                  | 查询某个post下的所有的评论                                   |                                                  | post不存在                                                   | `comment/queryPost/` | GET            |
 | comment_publish   | user_id(request.META自带)<br />post_id<br />parent_id<br />txt |                  | 发布评论，并产生消息<br />- 直接回复帖子：给发帖人发送消息<br />- 回复帖子下的评论：给发帖人发送消息(source=1, source_id=post_id)，同时给父级评论发布人发送消息(==选择source为1还是2？==) |                                                  | post不存在<br />parent_id不为空但父级comment不存在<br />父级comment的post_id与当前post_id不一致<br />用户没有在当前block下发布评论的权限<br />==用户没有足够的point发布评论== | `comment/publish/`   | POST           |
 | comment_delete    | user_id(request.META自带)<br />comment_id                    |                  | 删除评论，级联删除其子评论<br />==如果是助教删除的评论，是否应该发送一条消息？== | - 删除自己的评论<br />- 删除他人的评论，perm >=2 | 评论不存在<br />==删除他人评论时，==权限不足(pem<2)<br />~可删除自己发布的评论~ | `comment/delete/`    | POST           |
-| comment_like      | user_id(request.META自带)<br />comment_id<br />like(0:取消点赞) |                  | like=0:取消点赞<br />like=1:点赞<br />                       |                                                  | like的值非[0,1]<br />评论不存在<br />                        | `comment/like/`      | POST           |
+| comment_like      | user_id(request.META自带)<br />comment_id<br />              |                  | 改变点赞状态：未点赞->点赞；点赞->未点赞                     |                                                  | 评论不存在                                                   | `comment/like/`      | POST           |
 
 
 
